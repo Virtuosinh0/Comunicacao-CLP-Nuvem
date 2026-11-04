@@ -1,7 +1,7 @@
 # Comunicacao-CLP-Nuvem
 
 1. **CLP Siemens:** Dispositivo físico de automação controlando o processo produtivo.
-2. **Serviço Local (C#/C++):** Realiza a leitura e escrita direta nos blocos de dados (DBs) do CLP utilizando bibliotecas de comunicação industrial (ex: Snap7).
+2. **Serviço Local (C#/C++):** Realiza a leitura e escrita direta nos blocos de dados (DBs) do CLP utilizando bibliotecas de comunicação industrial (Snap7).
 3. **API Spring Boot:** Centraliza as regras de negócio, gerencia o banco de dados relacional e expõe os endpoints REST / WebSockets.
 4. **App Mobile (Kotlin):** Aplicativo nativo Android para acompanhamento dinâmico dos indicadores de desempenho (OEE, contagens e alarmes).
 
