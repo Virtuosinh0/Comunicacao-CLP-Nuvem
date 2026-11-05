@@ -39,16 +39,21 @@ Este repositório contém a documentação da arquitetura, a definição dos con
 
 * **URL:** `/api/v1/telemetry/reactors`
 * **Método:** `POST`
+* Um envio por OP. `start_time` / `end_time` são `null` quando a data não está preenchida no CLP.
 * **Request Body:**
 ```json
 {
-  "reactor_id": "R-300",
+  "reactor_id": "R300",
   "op_code": "AAA",
   "product_code": "00000-00",
+  "status": 2,
+  "priority": 1,
   "requested_weight_kg": 6500.0,
   "produced_weight_kg": 4900.0,
   "current_step": 15,
   "start_time": "2026-11-04T08:00:00Z",
+  "end_time": null,
+  "final_destination": "TQ-10",
   "timestamp": "2026-11-04T20:30:00Z"
 }
 ```

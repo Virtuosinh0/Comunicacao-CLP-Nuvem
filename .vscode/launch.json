@@ -1,0 +1,17 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "DataManager: ler CLP (debug)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build DataManager",
+      "program": "${workspaceFolder}/DataManager/src/DataManager.Service/bin/Debug/net8.0-windows/win-x64/DataManager.Service.dll",
+      "cwd": "${workspaceFolder}/DataManager/src/DataManager.Service/bin/Debug/net8.0-windows/win-x64",
+      "env": { "DOTNET_ENVIRONMENT": "Development" },
+      "console": "integratedTerminal",
+      "stopAtEntry": false,
+      "justMyCode": true
+    }
+  ]
+}

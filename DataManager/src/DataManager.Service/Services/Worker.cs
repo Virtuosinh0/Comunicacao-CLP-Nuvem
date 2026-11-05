@@ -1,49 +1,62 @@
 using DataManager.Service.Config;
 using DataManager.Service.Http;
 using DataManager.Service.Models;
+using DataManager.Service.Models.Api;
 using DataManager.Service.Plc;
 using Microsoft.Extensions.Options;
 
 namespace DataManager.Service.Services;
 
 /// <summary>
-/// Ciclo principal do serviço: a cada intervalo lê os grupos de tags do CLP,
-/// converte cada grupo em um payload da API e entrega ao <see cref="ITelemetrySender"/>.
+/// Ciclo principal do serviço: a cada intervalo, para cada CLP, lê o array de OPs e os moinhos,
+/// converte em payloads da API e entrega ao <see cref="ITelemetrySender"/>.
+/// Um CLP fora do ar não impede a leitura dos outros.
 /// </summary>
 public sealed class Worker : BackgroundService
 {
     private readonly ILogger<Worker> _logger;
-    private readonly IPlcReader _plc;
-    private readonly ResolvedTagMap _tagMap;
     private readonly ITelemetrySender _sender;
     private readonly PlcOptions _options;
+    private readonly IReadOnlyList<(PlcStation Station, IPlcReader Plc)> _stations;
 
     public Worker(
         ILogger<Worker> logger,
-        IPlcReader plc,
-        ResolvedTagMap tagMap,
+        ILoggerFactory loggerFactory,
+        IReadOnlyList<PlcStation> stations,
         ITelemetrySender sender,
         IOptions<PlcOptions> options)
     {
         _logger = logger;
-        _plc = plc;
-        _tagMap = tagMap;
         _sender = sender;
         _options = options.Value;
+
+        var readerLogger = loggerFactory.CreateLogger<Sharp7PlcReader>();
+        _stations = stations
+            .Select(s => (s, (IPlcReader)new Sharp7PlcReader(
+                s.Name, s.Connection, _options.ConnectTimeoutMs, _options.ClockIsUtc, readerLogger)))
+            .ToList();
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation(
-            "DataManager iniciado: {Reactors} reator(es), {Mills} moinho(s), ciclo de {Interval}s",
-            _tagMap.Reactors.Count, _tagMap.Mills.Count, _options.PollIntervalSeconds);
+        foreach (var (station, _) in _stations)
+        {
+            _logger.LogInformation(
+                "{Plc}: {Ip}, {Ops} OP(s) no DB{Db}, {Mills} moinho(s)",
+                station.Name, station.Connection.Ip, station.Definition.Ops.Count,
+                station.Connection.OpDb, station.Mills.Count);
+        }
+
+        _logger.LogInformation("DataManager iniciado: ciclo de {Interval}s", _options.PollIntervalSeconds);
 
         using var timer = new PeriodicTimer(TimeSpan.FromSeconds(Math.Max(1, _options.PollIntervalSeconds)));
         try
         {
             do
             {
-                await RunCycleAsync(stoppingToken);
+                var timestamp = TruncateToSeconds(DateTime.UtcNow);
+                foreach (var (station, plc) in _stations)
+                    await RunStationCycleAsync(station, plc, timestamp, stoppingToken);
             }
             while (await timer.WaitForNextTickAsync(stoppingToken));
         }
@@ -53,11 +66,19 @@ public sealed class Worker : BackgroundService
         }
     }
 
-    private async Task RunCycleAsync(CancellationToken cancellationToken)
+    public override void Dispose()
+    {
+        foreach (var (_, plc) in _stations)
+            plc.Dispose();
+
+        base.Dispose();
+    }
+
+    private async Task RunStationCycleAsync(PlcStation station, IPlcReader plc, DateTime timestamp, CancellationToken cancellationToken)
     {
         try
         {
-            _plc.Connect();
+            plc.Connect();
         }
         catch (PlcCommunicationException ex)
         {
@@ -65,60 +86,77 @@ public sealed class Worker : BackgroundService
             return;
         }
 
-        var timestamp = TruncateToSeconds(DateTime.UtcNow);
-
         try
         {
-            foreach (var group in _tagMap.Reactors)
-            {
-                await ProcessGroupAsync(group,
-                    values => TelemetryMapper.ToReactor(group, values, timestamp),
-                    _sender.SendReactorAsync, cancellationToken);
-            }
+            await ProcessOpsAsync(station, plc, timestamp, cancellationToken);
 
-            foreach (var group in _tagMap.Mills)
-            {
-                await ProcessGroupAsync(group,
-                    values => TelemetryMapper.ToMill(group, values, timestamp),
-                    _sender.SendMillAsync, cancellationToken);
-            }
+            foreach (var mill in station.Mills)
+                await ProcessMillAsync(mill, plc, timestamp, cancellationToken);
         }
         catch (PlcCommunicationException ex)
         {
             // Perda de comunicação: desconecta e tenta reconectar no próximo ciclo.
             _logger.LogWarning("{Message}", ex.Message);
-            _plc.Disconnect();
+            plc.Disconnect();
         }
     }
 
-    /// <summary>
-    /// N tags do CLP → 1 payload da API → envio.
-    /// Erros de conversão/envio afetam só este grupo; erros de comunicação com o CLP sobem.
-    /// </summary>
-    private async Task ProcessGroupAsync<TPayload>(
-        TagGroup group,
-        Func<IReadOnlyDictionary<string, object>, TPayload> map,
-        Func<TPayload, CancellationToken, Task> send,
-        CancellationToken cancellationToken)
+    /// <summary>Lê o array de OPs inteiro em uma leitura e envia um payload por OP.</summary>
+    private async Task ProcessOpsAsync(PlcStation station, IPlcReader plc, DateTime timestamp, CancellationToken cancellationToken)
     {
-        TPayload payload;
+        var ops = station.Definition.Ops;
+        var size = ops.Count * OpLayout.Size;
+        var started = System.Diagnostics.Stopwatch.GetTimestamp();
+        var buffer = plc.ReadBytes(station.Connection.OpDb, station.Connection.OpStartAddress, size);
+        _logger.LogDebug("{Plc}: lidas {Ops} OP(s) do DB{Db} (bytes {Start} a {End}) em {Ms:0} ms",
+            station.Name, ops.Count, station.Connection.OpDb, station.Connection.OpStartAddress,
+            station.Connection.OpStartAddress + size - 1,
+            System.Diagnostics.Stopwatch.GetElapsedTime(started).TotalMilliseconds);
+
+        for (var i = 0; i < ops.Count; i++)
+        {
+            ReactorTelemetry payload;
+            try
+            {
+                var op = OpLayout.Decode(buffer.AsSpan(i * OpLayout.Size, OpLayout.Size), _options.ClockIsUtc);
+                payload = TelemetryMapper.ToReactor(ops[i], op, timestamp);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{Plc}: erro ao converter a OP[{Index}] ({Id})", station.Name, i, ops[i]);
+                continue;
+            }
+
+            await SendAsync(ops[i], () => _sender.SendReactorAsync(payload, cancellationToken));
+        }
+    }
+
+    private async Task ProcessMillAsync(TagGroup mill, IPlcReader plc, DateTime timestamp, CancellationToken cancellationToken)
+    {
+        MillTelemetry payload;
         try
         {
-            payload = map(_plc.Read(group.Tags));
+            payload = TelemetryMapper.ToMill(mill, plc.Read(mill.Tags), timestamp);
         }
         catch (Exception ex) when (ex is not PlcCommunicationException)
         {
-            _logger.LogError(ex, "Erro ao converter os dados de {Id}", group.Id);
+            _logger.LogError(ex, "Erro ao converter os dados de {Id}", mill.Id);
             return;
         }
 
+        await SendAsync(mill.Id, () => _sender.SendMillAsync(payload, cancellationToken));
+    }
+
+    /// <summary>Erro de envio afeta só este payload.</summary>
+    private async Task SendAsync(string id, Func<Task> send)
+    {
         try
         {
-            await send(payload, cancellationToken);
+            await send();
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            _logger.LogError(ex, "Erro ao enviar os dados de {Id}", group.Id);
+            _logger.LogError(ex, "Erro ao enviar os dados de {Id}", id);
         }
     }
 

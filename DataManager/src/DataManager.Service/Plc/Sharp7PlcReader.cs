@@ -1,20 +1,29 @@
 using DataManager.Service.Config;
 using DataManager.Service.Models;
-using Microsoft.Extensions.Options;
 using Sharp7;
 
 namespace DataManager.Service.Plc;
 
-/// <summary>Leitura do CLP Siemens via Sharp7 (port C# do Snap7, protocolo S7).</summary>
+/// <summary>
+/// Leitura de UM CLP Siemens via Sharp7 (port C# do Snap7, protocolo S7).
+/// SOMENTE LEITURA: o S7Client é privado e a única operação feita no CLP é DBRead.
+/// Nunca adicionar escrita (DBWrite/WriteArea/...) nem comandos (Stop/Start/SetDateTime/...).
+/// </summary>
 public sealed class Sharp7PlcReader : IPlcReader
 {
     private readonly S7Client _client = new();
-    private readonly PlcOptions _options;
-    private readonly ILogger<Sharp7PlcReader> _logger;
+    private readonly string _name;
+    private readonly PlcConnectionOptions _connection;
+    private readonly int _connectTimeoutMs;
+    private readonly bool _clockIsUtc;
+    private readonly ILogger _logger;
 
-    public Sharp7PlcReader(IOptions<PlcOptions> options, ILogger<Sharp7PlcReader> logger)
+    public Sharp7PlcReader(string name, PlcConnectionOptions connection, int connectTimeoutMs, bool clockIsUtc, ILogger logger)
     {
-        _options = options.Value;
+        _name = name;
+        _connection = connection;
+        _connectTimeoutMs = connectTimeoutMs;
+        _clockIsUtc = clockIsUtc;
         _logger = logger;
     }
 
@@ -25,16 +34,17 @@ public sealed class Sharp7PlcReader : IPlcReader
         if (_client.Connected)
             return;
 
-        _client.ConnTimeout = _options.ConnectTimeoutMs;
-        var result = _client.ConnectTo(_options.Ip, _options.Rack, _options.Slot);
+        _client.ConnTimeout = _connectTimeoutMs;
+        var result = _client.ConnectTo(_connection.Ip, _connection.Rack, _connection.Slot);
         if (result != 0)
         {
             throw new PlcCommunicationException(
-                $"Falha ao conectar no CLP {_options.Ip} (rack {_options.Rack}, slot {_options.Slot}): {_client.ErrorText(result)}",
+                $"{_name}: falha ao conectar em {_connection.Ip} (rack {_connection.Rack}, slot {_connection.Slot}): {_client.ErrorText(result)}",
                 result);
         }
 
-        _logger.LogInformation("Conectado ao CLP {Ip} (rack {Rack}, slot {Slot})", _options.Ip, _options.Rack, _options.Slot);
+        _logger.LogInformation("{Plc}: conectado em {Ip} (rack {Rack}, slot {Slot})",
+            _name, _connection.Ip, _connection.Rack, _connection.Slot);
     }
 
     public void Disconnect()
@@ -42,33 +52,40 @@ public sealed class Sharp7PlcReader : IPlcReader
         if (_client.Connected)
         {
             _client.Disconnect();
-            _logger.LogInformation("Desconectado do CLP {Ip}", _options.Ip);
+            _logger.LogInformation("{Plc}: desconectado de {Ip}", _name, _connection.Ip);
         }
     }
 
-    public IReadOnlyDictionary<string, object> Read(IReadOnlyList<PlcTag> tags)
+    public byte[] ReadBytes(int db, int start, int size)
     {
-        var values = new Dictionary<string, object>(tags.Count, StringComparer.OrdinalIgnoreCase);
+        // O Sharp7 divide leituras maiores que o PDU em várias requisições automaticamente.
+        var buffer = new byte[size];
+        var result = _client.DBRead(db, start, size, buffer);
+        if (result != 0)
+        {
+            throw new PlcCommunicationException(
+                $"{_name}: falha ao ler DB{db} (bytes {start} a {start + size - 1}): {_client.ErrorText(result)}",
+                result);
+        }
+
+        return buffer;
+    }
+
+    public IReadOnlyDictionary<string, object?> Read(IReadOnlyList<PlcTag> tags)
+    {
+        var values = new Dictionary<string, object?>(tags.Count, StringComparer.OrdinalIgnoreCase);
 
         // Uma única leitura por DB, cobrindo do menor ao maior endereço usado no grupo.
         foreach (var dbTags in tags.GroupBy(t => t.Db))
         {
             var start = dbTags.Min(t => t.ByteOffset);
             var end = dbTags.Max(t => t.ByteOffset + t.Size);
-            var buffer = new byte[end - start];
-
-            var result = _client.DBRead(dbTags.Key, start, buffer.Length, buffer);
-            if (result != 0)
-            {
-                throw new PlcCommunicationException(
-                    $"Falha ao ler DB{dbTags.Key} (bytes {start} a {end - 1}): {_client.ErrorText(result)}",
-                    result);
-            }
+            var buffer = ReadBytes(dbTags.Key, start, end - start);
 
             foreach (var tag in dbTags)
             {
                 var slice = buffer.AsSpan(tag.ByteOffset - start, tag.Size);
-                values[tag.Name] = PlcValueDecoder.Decode(tag, slice, _options.ClockIsUtc);
+                values[tag.Name] = PlcValueDecoder.Decode(tag, slice, _clockIsUtc);
             }
         }
 

@@ -4,45 +4,36 @@ using DataManager.Service.Models.Api;
 
 namespace DataManager.Service.Services;
 
-/// <summary>
-/// Converte os valores lidos de N tags do CLP ("JSON CLP") em UM payload da API ("JSON API").
-/// O "name" de cada tag no plc-tags.json deve ser igual ao nome do campo no JSON da API.
-/// </summary>
+/// <summary>Converte os dados lidos do CLP nos payloads da API.</summary>
 public static class TelemetryMapper
 {
-    /// <summary>Tags que cada reator precisa ter no plc-tags.json.</summary>
-    public static readonly IReadOnlyList<string> ReactorTagNames =
-    [
-        "op_code",
-        "product_code",
-        "requested_weight_kg",
-        "produced_weight_kg",
-        "current_step",
-        "start_time"
-    ];
-
     /// <summary>Tags que cada moinho precisa ter no plc-tags.json.</summary>
     public static readonly IReadOnlyList<string> MillTagNames =
     [
         "production_today_kg"
     ];
 
-    public static ReactorTelemetry ToReactor(TagGroup group, IReadOnlyDictionary<string, object> values, DateTime timestampUtc)
+    /// <summary>UDT da OP → payload do reator.</summary>
+    public static ReactorTelemetry ToReactor(string reactorId, OpData op, DateTime timestampUtc)
     {
         return new ReactorTelemetry
         {
-            ReactorId = group.Id,
-            OpCode = GetString(values, "op_code"),
-            ProductCode = GetString(values, "product_code"),
-            RequestedWeightKg = GetDouble(values, "requested_weight_kg"),
-            ProducedWeightKg = GetDouble(values, "produced_weight_kg"),
-            CurrentStep = GetInt(values, "current_step"),
-            StartTime = GetDateTime(values, "start_time"),
+            ReactorId = reactorId,
+            OpCode = op.CodigoOp.Trim(),
+            ProductCode = op.NomeProduto.Trim(),
+            Status = op.Status,
+            Priority = op.Prioridade,
+            RequestedWeightKg = ToDouble(op.QuantidadeSp),
+            ProducedWeightKg = ToDouble(op.QuantidadePv),
+            CurrentStep = op.TarefaAtual,
+            StartTime = op.DataStart,
+            EndTime = op.DataEnd,
+            FinalDestination = op.DestinoFinal.Trim(),
             Timestamp = timestampUtc
         };
     }
 
-    public static MillTelemetry ToMill(TagGroup group, IReadOnlyDictionary<string, object> values, DateTime timestampUtc)
+    public static MillTelemetry ToMill(TagGroup group, IReadOnlyDictionary<string, object?> values, DateTime timestampUtc)
     {
         return new MillTelemetry
         {
@@ -53,41 +44,19 @@ public static class TelemetryMapper
         };
     }
 
-    private static object Get(IReadOnlyDictionary<string, object> values, string name)
-    {
-        return values.TryGetValue(name, out var value)
-            ? value
-            : throw new KeyNotFoundException($"Tag '{name}' não foi lida do CLP.");
-    }
+    /// <summary>Passa por decimal para evitar ruído de precisão do float (ex.: 0.1f → 0.100000001490116).</summary>
+    private static double ToDouble(float value) =>
+        float.IsFinite(value) ? (double)(decimal)value : 0d;
 
-    private static string GetString(IReadOnlyDictionary<string, object> values, string name)
+    private static double GetDouble(IReadOnlyDictionary<string, object?> values, string name)
     {
-        return Get(values, name) switch
-        {
-            string s => s.Trim(),
-            var other => Convert.ToString(other, CultureInfo.InvariantCulture) ?? string.Empty
-        };
-    }
+        if (!values.TryGetValue(name, out var value))
+            throw new KeyNotFoundException($"Tag '{name}' não foi lida do CLP.");
 
-    private static double GetDouble(IReadOnlyDictionary<string, object> values, string name)
-    {
-        return Get(values, name) switch
+        return value switch
         {
-            // Passa por decimal para evitar ruído de precisão do float (ex.: 0.1f → 0.100000001490116).
-            float f => (double)(decimal)f,
+            float f => ToDouble(f),
             var other => Convert.ToDouble(other, CultureInfo.InvariantCulture)
         };
-    }
-
-    private static int GetInt(IReadOnlyDictionary<string, object> values, string name)
-    {
-        return Convert.ToInt32(Get(values, name), CultureInfo.InvariantCulture);
-    }
-
-    private static DateTime GetDateTime(IReadOnlyDictionary<string, object> values, string name)
-    {
-        return Get(values, name) is DateTime dateTime
-            ? dateTime
-            : throw new InvalidCastException($"Tag '{name}' deveria ser do formato DTL.");
     }
 }
