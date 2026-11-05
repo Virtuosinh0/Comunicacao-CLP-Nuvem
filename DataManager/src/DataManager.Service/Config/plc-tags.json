@@ -1,0 +1,51 @@
+{
+  "TagMap": {
+    "Reactors": [
+      {
+        "reactorId": "R-300",
+        "tags": [
+          { "db": 100, "format": "STRING", "address": "0",  "length": 10, "name": "op_code" },
+          { "db": 100, "format": "STRING", "address": "12", "length": 10, "name": "product_code" },
+          { "db": 100, "format": "REAL",   "address": "24", "name": "requested_weight_kg" },
+          { "db": 100, "format": "REAL",   "address": "28", "name": "produced_weight_kg" },
+          { "db": 100, "format": "INT",    "address": "32", "name": "current_step" },
+          { "db": 100, "format": "DTL",    "address": "34", "name": "start_time" }
+        ]
+      },
+      {
+        "reactorId": "R-301",
+        "tags": [
+          { "db": 101, "format": "STRING", "address": "0",  "length": 10, "name": "op_code" },
+          { "db": 101, "format": "STRING", "address": "12", "length": 10, "name": "product_code" },
+          { "db": 101, "format": "REAL",   "address": "24", "name": "requested_weight_kg" },
+          { "db": 101, "format": "REAL",   "address": "28", "name": "produced_weight_kg" },
+          { "db": 101, "format": "INT",    "address": "32", "name": "current_step" },
+          { "db": 101, "format": "DTL",    "address": "34", "name": "start_time" }
+        ]
+      }
+    ],
+    "Mills": [
+      {
+        "millId": "M-200",
+        "name": "Moinho 200",
+        "tags": [
+          { "db": 200, "format": "REAL", "address": "0", "name": "production_today_kg" }
+        ]
+      },
+      {
+        "millId": "M-201",
+        "name": "Moinho 201",
+        "tags": [
+          { "db": 200, "format": "REAL", "address": "4", "name": "production_today_kg" }
+        ]
+      },
+      {
+        "millId": "M-202",
+        "name": "Moinho 202",
+        "tags": [
+          { "db": 200, "format": "REAL", "address": "8", "name": "production_today_kg" }
+        ]
+      }
+    ]
+  }
+}
