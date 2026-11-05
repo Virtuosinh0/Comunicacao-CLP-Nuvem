@@ -87,8 +87,8 @@ No celular:
   "plc_id": "CLP2",
   "timestamp": "2026-11-05T14:49:07Z",
   "reactors": [
-    { "reactor_id": "R210", "op_code": "AEMEKL01001", "product_code": "P62475", "status": 2,
-      "requested_weight_kg": 6500.0, "produced_weight_kg": 3767.4, "current_step": 3,
+    { "reactor_id": "R210", "op_code": "AAAAAA00000", "product_code": "000000", "status": 2,
+      "requested_weight_kg": 9999.0, "produced_weight_kg": 5555.4, "current_step": 3,
       "start_time": "2026-11-05T14:14:47Z" },
     { "reactor_id": "R211", "op_code": "" }
   ]
