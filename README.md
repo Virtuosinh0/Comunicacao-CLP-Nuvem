@@ -1,8 +1,26 @@
-# 🧪 Acompanhamento de Produção para o Setor Industrial Químico em Nuvem
+# Acompanhamento de Produção para o Setor Industrial Químico em Nuvem
 
 Este repositório contém a documentação da arquitetura, a definição dos contratos de API REST e a simulação de payloads JSON para a solução de acompanhamento de produção industrial em nuvem, voltada ao setor químico.
 
-## 🛠️ Arquitetura do Sistema
+> **AVISO: a parte de Moinhos (Moagem) NÃO está feita.**
+> Só o acompanhamento das OPs/Reatores (tela de Produção) está funcionando de ponta a ponta.
+> Para Moinhos, o que existe é apenas o contrato da API descrito abaixo e endereços de exemplo no DataManager
+> (`Config/plc-tags.json`, DB200, que não existe no CLP). Ainda não há endpoint de moinhos na API,
+> e a tela de Moagem só mostra "Aguardando integração".
+
+## Telas
+
+Tela de Produção no desktop (códigos de OP e de produto ocultados na imagem):
+
+![Tela de Produção - desktop](Files/MainScreenDesktop.png)
+
+No celular:
+
+<img src="Files/MainScreenMobile.png" alt="Tela de Produção - celular" width="320" />
+
+## Arquitetura do Sistema
+
+![Fluxo: CLP (DB10) -> DataManager -> API -> Front-End](Files/Diagrama.png)
 
 ```
 [ CLP Siemens ] 
@@ -19,7 +37,9 @@ Este repositório contém a documentação da arquitetura, a definição dos con
 
 ### Papel de cada módulo:
 
-1. **CLP Siemens:** Controla os dispositivos físicos do chão de fábrica químico (tanques de mistura, reatores e moinhos).
+1. **CLP Siemens:** Controla os dispositivos físicos do chão de fábrica químico (tanques de mistura, reatores e moinhos). As OPs ficam no **DB10** (`dbProducao`), um `udtOPx` de 160 bytes por tanque:
+
+   ![DB10 (dbProducao) no TIA Portal](Files/CLP_DB.png)
 
 2. **Serviço Local (C#/C++):** Lê e processa os dados brutos do CLP. Realiza envios individuais via `POST` (uma requisição por OP e uma requisição por Moinho) a partir de um **IP Fixo** do gateway local para a nuvem.
 
@@ -29,9 +49,9 @@ Este repositório contém a documentação da arquitetura, a definição dos con
 
 ---
 
-## 🔌 Endpoints REST & Payloads JSON
+## Endpoints REST & Payloads JSON
 
-### 1. Ingestão de Dados (Servidor Local ➔ API Spring Boot em Nuvem)
+### 1. Ingestão de Dados (Servidor Local -> API Spring Boot em Nuvem)
 
 *Origem restrita ao IP Fixo do servidor local.*
 
@@ -75,7 +95,9 @@ Este repositório contém a documentação da arquitetura, a definição dos con
 }
 ```
 
-#### B. Atualizar dados de um Moinho
+#### B. Atualizar dados de um Moinho (NÃO IMPLEMENTADO)
+
+> Contrato previsto apenas. A API ainda não tem este endpoint.
 
 * **URL:** `/api/v1/telemetry/mills`
 * **Método:** `POST`
@@ -91,7 +113,7 @@ Este repositório contém a documentação da arquitetura, a definição dos con
 
 ---
 
-### 2. Consulta de Dados (Web App React ➔ API Spring Boot em Nuvem)
+### 2. Consulta de Dados (Web App React -> API Spring Boot em Nuvem)
 
 *Exclusivo para IPs previamente autorizados.*
 
@@ -131,7 +153,9 @@ Retorna o status atual de todas as OPs/reatores monitorados no processo químico
 }
 ```
 
-#### B. Lista de Moinhos (Tela de Moagem)
+#### B. Lista de Moinhos (Tela de Moagem) (NÃO IMPLEMENTADO)
+
+> Contrato previsto apenas. A API ainda não tem este endpoint.
 
 Retorna o resumo de produção acumulada do dia de todos os moinhos da planta industrial.
 
@@ -165,7 +189,7 @@ Retorna o resumo de produção acumulada do dia de todos os moinhos da planta in
 
 ---
 
-## 💻 Tecnologias Previstas
+## Tecnologias Previstas
 
 * **Chão de Fábrica (OT):** CLP Siemens (S7-1200 / S7-1500)
 * **Serviço Local / Gateway:** C# (.NET Core) ou C++ (Snap7)

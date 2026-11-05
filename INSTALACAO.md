@@ -1,4 +1,4 @@
-# 🧰 Instalação — Ferramentas, Extensões e Bibliotecas
+# Instalação — Ferramentas, Extensões e Bibliotecas
 
 Tudo o que precisa estar instalado para desenvolver e rodar os três módulos do projeto.
 
@@ -20,11 +20,11 @@ Tudo o que precisa estar instalado para desenvolver e rodar os três módulos do
 | **.NET SDK** | **8.0** | DataManager | https://dotnet.microsoft.com/download/dotnet/8.0 | `dotnet --list-sdks` |
 | **Node.js** | 20 LTS ou superior (npm já incluso) | FrontEnd | https://nodejs.org | `node -v` / `npm -v` |
 
-> ⚠️ **Java 8 não funciona.** O Spring Boot 3 exige Java 17+. Se tiver mais de um JDK instalado, confira se `JAVA_HOME` aponta para o 17+.
+> **Atenção: Java 8 não funciona.** O Spring Boot 3 exige Java 17+. Se tiver mais de um JDK instalado, confira se `JAVA_HOME` aponta para o 17+.
 >
-> 💡 O Maven pode ser dispensado se for usado o IntelliJ IDEA, que já traz um Maven embutido.
+> Dica: o Maven pode ser dispensado se for usado o IntelliJ IDEA, que já traz um Maven embutido.
 >
-> 💡 O DataManager só roda em **Windows** (é um Serviço Windows).
+> Dica: o DataManager só roda em **Windows** (é um Serviço Windows).
 
 ---
 
@@ -121,7 +121,7 @@ Os endereços (offsets) mostrados no TIA Portal são os que vão no campo `addre
 
 ---
 
-## ✅ Checklist rápido
+## Checklist rápido
 
 - [ ] Git instalado
 - [ ] JDK 17+ instalado e `JAVA_HOME` configurado
