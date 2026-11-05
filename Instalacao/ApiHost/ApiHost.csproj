@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+  <!-- Hospeda a API Spring Boot (java -jar) como Serviço Windows "ClpApi". -->
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>ApiHost</RootNamespace>
+    <AssemblyName>ClpApi.Host</AssemblyName>
+    <OutputType>exe</OutputType>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>false</SelfContained>
+
+    <ApplicationIcon>anjo.ico</ApplicationIcon>
+    <Product>CLP Nuvem - API</Product>
+    <AssemblyTitle>CLP Nuvem - API (hospedeiro do serviço)</AssemblyTitle>
+    <Description>Roda a API Spring Boot e a tela como Serviço Windows.</Description>
+    <Company>LSC Automation</Company>
+    <Authors>LSC Automation</Authors>
+    <Copyright>Copyright © 2026 LSC Automation. All rights reserved</Copyright>
+    <Version>1.0.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="8.0.1" />
+  </ItemGroup>
+
+</Project>

@@ -8,14 +8,14 @@ src/
 ├── api/         # Chamadas aos endpoints GET da API
 ├── assets/      # Imagens, ícones
 ├── components/
-│   ├── ScreenNav.jsx   # Abas, anterior/próxima e controle da troca automática
+│   ├── ScreenNav.jsx   # Logo, abas e anterior/próxima
+│   ├── Footer.jsx      # Rodapé
 │   └── ScreenView.jsx  # Renderiza a tela atual
 ├── config/
-│   └── screens.js      # Lista de telas e intervalos da troca automática
+│   └── screens.js      # Lista de telas (a primeira é a inicial)
 ├── hooks/       # Hooks (ex.: polling periódico dos dados)
 ├── pages/
-│   ├── Home/      # Tela inicial
-│   ├── Producao/  # Tela de Revisão de Produção (OPs/Reatores)
+│   ├── Producao/  # Tela de Produção (OPs/Reatores) — tela inicial
 │   └── Moagem/    # Tela de Moagem (Moinhos)
 ├── services/
 │   └── ScreenService.jsx  # Serviço de troca de tela (ScreenProvider + useScreen)
@@ -27,17 +27,15 @@ src/
 
 O `ScreenService` controla qual tela está visível:
 
-- **Manual:** abas no topo, botões ‹ › ou setas ← → do teclado.
-- **Automática:** marque "Troca automática" e escolha o intervalo. Alterna entre as telas com `inRotation: true` (a tela Início fica de fora). Qualquer troca manual reinicia a contagem, e a barra azul no topo mostra o tempo restante.
+- **Abas** no topo, botões ‹ › ou setas ← → do teclado (no celular, só as abas).
 - **Link direto:** a tela atual fica na URL (`#/producao`, `#/moagem`), útil para deixar uma TV abrindo direto num painel.
-- A preferência de troca automática fica salva no navegador.
 
 Em qualquer componente:
 
 ```jsx
 import { useScreen } from '../services/ScreenService.jsx'
 
-const { currentId, goTo, next, prev, rotation, setAutoRotate } = useScreen()
+const { currentId, goTo, next, prev } = useScreen()
 goTo('moagem')
 ```
 
@@ -73,4 +71,4 @@ Para não exibir dado desatualizado como se fosse atual:
 
 O `status` da OP é traduzido pela tabela em `src/config/opStatus.js` (00 Programado … 11 Finalizada). Código fora da tabela aparece como "Status N (desconhecido)".
 
-Tema: branco + vermelho `rgb(255, 32, 32)` (variáveis no topo de `src/styles/global.css`). Alertas usam âmbar para não se confundirem com o vermelho da marca.
+Visual baseado no site da Anjo Tintas: fonte Poppins (pacote `@fontsource/poppins`, embutida no build, funciona sem internet), vermelho `#D01235`, blocos cinza `#F0F0F0`, cantos assimétricos e abas em formato de pasta (variáveis no topo de `src/styles/global.css`). O status da OP usa a paleta da IHM. Alertas usam âmbar para não se confundirem com o vermelho da marca.

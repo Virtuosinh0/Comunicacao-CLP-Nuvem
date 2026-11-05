@@ -1,33 +1,18 @@
 import { useScreen } from '../services/ScreenService.jsx'
-import { ROTATION_INTERVAL_OPTIONS } from '../config/screens.js'
+import logoAnjo from '../assets/logo-anjo.svg'
 
-function formatInterval(seconds) {
-  return seconds < 60 ? `${seconds}s` : `${seconds / 60} min`
-}
-
-/** Barra superior: abas das telas, anterior/próxima e controle da troca automática. */
+/** Barra superior: logo, abas das telas e anterior/próxima. */
 export default function ScreenNav() {
-  const { screens, currentId, goTo, next, prev, rotation, setAutoRotate, setIntervalSeconds, cycle } = useScreen()
-
-  const intervalOptions = [...new Set([...ROTATION_INTERVAL_OPTIONS, rotation.intervalSeconds])].sort((a, b) => a - b)
+  const { screens, currentId, goTo, next, prev } = useScreen()
 
   return (
     <header className="screen-nav">
       <div className="screen-nav__row">
-        <span className="screen-nav__brand">Produção</span>
-        <nav className="screen-nav__tabs" aria-label="Telas">
-          {screens.map((screen) => (
-            <button
-              key={screen.id}
-              type="button"
-              className={`screen-nav__tab${screen.id === currentId ? ' is-active' : ''}`}
-              aria-current={screen.id === currentId ? 'page' : undefined}
-              onClick={() => goTo(screen.id)}
-            >
-              {screen.title}
-            </button>
-          ))}
-        </nav>
+        <div className="screen-nav__brand">
+          <img className="screen-nav__logo" src={logoAnjo} alt="Anjo Tintas" />
+          <span className="screen-nav__brand-sep" aria-hidden="true" />
+          <span>Produção</span>
+        </div>
 
         <div className="screen-nav__controls">
           <button type="button" className="screen-nav__icon" onClick={prev} aria-label="Tela anterior" title="Tela anterior (←)">
@@ -36,32 +21,23 @@ export default function ScreenNav() {
           <button type="button" className="screen-nav__icon" onClick={next} aria-label="Próxima tela" title="Próxima tela (→)">
             ›
           </button>
-
-          <label className="screen-nav__rotate">
-            <input type="checkbox" checked={rotation.enabled} onChange={(e) => setAutoRotate(e.target.checked)} />
-            Troca automática
-          </label>
-
-          <select
-            className="screen-nav__interval"
-            value={rotation.intervalSeconds}
-            onChange={(e) => setIntervalSeconds(e.target.value)}
-            aria-label="Intervalo da troca automática"
-          >
-            {intervalOptions.map((seconds) => (
-              <option key={seconds} value={seconds}>
-                {formatInterval(seconds)}
-              </option>
-            ))}
-          </select>
         </div>
       </div>
 
-      <div className="screen-nav__progress" aria-hidden="true">
-        {rotation.enabled && (
-          <div key={cycle} className="screen-nav__progress-bar" style={{ animationDuration: `${rotation.intervalSeconds}s` }} />
-        )}
-      </div>
+      {/* Abas em formato de pasta, encaixadas na base da barra (como no site da Anjo). */}
+      <nav className="screen-nav__tabs" aria-label="Telas">
+        {screens.map((screen) => (
+          <button
+            key={screen.id}
+            type="button"
+            className={`screen-nav__tab${screen.id === currentId ? ' is-active' : ''}`}
+            aria-current={screen.id === currentId ? 'page' : undefined}
+            onClick={() => goTo(screen.id)}
+          >
+            {screen.title}
+          </button>
+        ))}
+      </nav>
     </header>
   )
 }

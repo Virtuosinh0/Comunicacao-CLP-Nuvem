@@ -1,5 +1,7 @@
 # DataManager — Serviço Windows (Gateway Local)
 
+**Autor:** LSC Automation · Copyright © 2026 LSC Automation. All rights reserved
+
 C# (.NET 8 Worker Service rodando como Serviço Windows). Lê os DBs dos CLPs Siemens via protocolo S7 usando o **Sharp7** (port oficial em C# do Snap7, sem DLL nativa) e monta um JSON por OP/Reator e um por Moinho, no formato da API.
 
 ```

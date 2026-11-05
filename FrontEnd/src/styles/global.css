@@ -1,24 +1,36 @@
-/* Tema branco + vermelho vivo rgb(255, 32, 32).
- * O vermelho é a cor da marca (barra, destaques, progresso). Estados de alerta usam
- * âmbar/cinza para não se confundirem com o vermelho do tema. */
+/* Identidade visual baseada no site da Anjo Tintas (anjo.com.br):
+ *  - fonte Poppins, títulos em extrabold cinza-escuro;
+ *  - vermelho da marca #D01235 (escuro #901821) na barra e nos destaques;
+ *  - blocos cinza-claro #F0F0F0 sobre fundo branco;
+ *  - cantos assimétricos (superior-esquerdo e inferior-direito menores);
+ *  - abas em formato de pasta encaixadas na barra vermelha.
+ * As cores de STATUS DA OP continuam sendo as da IHM (abaixo, .op-status--*). */
 :root {
-  --red: rgb(255, 32, 32);
-  --red-dark: rgb(200, 16, 16);   /* hover / texto vermelho pequeno sobre branco */
-  --red-soft: rgb(255, 235, 235);
+  --red: #d01235;
+  --red-dark: #901821;
+  --red-medium: #dc0833;
+  --red-soft: #f6d3da;
 
   --bg: #ffffff;
-  --surface: #ffffff;
-  --surface-alt: #f7f7f8;
-  --border: #e6e6e9;
-  --text: #1c1c1f;
-  --text-muted: #63636b;
+  --surface: #f0f0f0;       /* blocos / cards */
+  --surface-alt: #fafafa;
+  --border: #e4e4e4;
+  --line: #dcdcdc;          /* divisórias dentro de blocos cinza */
+  --text: #131212;
+  --text-body: #555555;     /* títulos e texto corrido (cinza-escuro da Anjo) */
+  --text-muted: #6b6b6b;
 
   --warn: #92400e;
   --warn-bg: #fff7e6;
   --warn-border: #f5c26b;
   --ok: #15803d;
 
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  /* Cantos assimétricos: sup-esq, sup-dir, inf-dir, inf-esq */
+  --shape-lg: 10px 28px 10px 28px;
+  --shape-md: 8px 18px 8px 18px;
+  --shape-sm: 5px 12px 5px 12px;
+
+  font-family: Poppins, ui-sans-serif, system-ui, 'Segoe UI', sans-serif;
   color: var(--text);
   background-color: var(--bg);
 }
@@ -61,58 +73,91 @@ select {
   to   { opacity: 1; transform: none; }
 }
 
-/* ---------- Barra superior (vermelha) ---------- */
+/* ---------- Barra superior (vermelha, abas em pasta) ---------- */
 
 .screen-nav {
   position: sticky;
   top: 0;
   z-index: 10;
+  display: flex;
+  flex-direction: column;
   background: var(--red);
+  border-top: 4px solid var(--red-dark);
   color: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.screen-nav__row,
+.screen-nav__tabs {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding-inline: 16px;
 }
 
 .screen-nav__row {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 10px 16px;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: space-between;
   gap: 8px 16px;
+  padding-block: 14px 6px;
 }
 
 .screen-nav__brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
   font-weight: 800;
-  font-size: 1.15rem;
-  letter-spacing: 0.02em;
-  margin-right: 8px;
+  font-size: 1.5rem;
+  letter-spacing: -0.01em;
+}
+
+/* Logo oficial (extraído do site da Anjo; texto em branco para a barra vermelha). */
+.screen-nav__logo {
+  display: block;
+  height: 42px;
+  width: auto;
+}
+
+.screen-nav__brand-sep {
+  width: 2px;
+  height: 30px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 1px;
 }
 
 .screen-nav__tabs {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
-  flex: 1;
+  padding-top: 6px;
 }
 
 .screen-nav__tab {
   border: 0;
   background: transparent;
-  padding: 8px 14px;
-  border-radius: 6px;
+  padding: 12px 22px;
+  border-radius: 10px 10px 0 0;
   cursor: pointer;
   color: #fff;
-  font-weight: 600;
+  font-weight: 700;
+  line-height: 1;
+  transition: background-color 150ms, color 150ms;
 }
 
 .screen-nav__tab:hover {
-  background: rgba(255, 255, 255, 0.18);
+  background: #fff;
+  color: var(--red);
 }
 
+/* Aba ativa: branca, "encaixa" no fundo da página. */
 .screen-nav__tab.is-active {
-  background: #fff;
-  color: var(--red-dark);
+  background: var(--bg);
+  color: var(--red);
+}
+
+.screen-nav__tab.is-active:hover {
+  color: var(--text-body);
 }
 
 .screen-nav__controls {
@@ -122,64 +167,26 @@ select {
 }
 
 .screen-nav__icon {
-  width: 34px;
-  height: 34px;
-  border: 1px solid rgba(255, 255, 255, 0.7);
-  border-radius: 6px;
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  border-radius: var(--shape-sm);
   background: transparent;
   color: #fff;
   cursor: pointer;
-  font-size: 1.2rem;
+  font-size: 1.25rem;
+  font-weight: 700;
   line-height: 1;
+  transition: background-color 150ms, color 150ms;
 }
 
 .screen-nav__icon:hover {
-  background: rgba(255, 255, 255, 0.18);
-}
-
-.screen-nav__rotate {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  user-select: none;
-}
-
-.screen-nav__rotate input {
-  accent-color: #fff;
-}
-
-.screen-nav__interval {
-  border: 1px solid rgba(255, 255, 255, 0.7);
-  border-radius: 6px;
   background: #fff;
-  color: var(--text);
-  padding: 4px 6px;
+  color: var(--red);
 }
 
 .screen-nav :focus-visible {
   outline-color: #fff;
-}
-
-.screen-nav__progress {
-  height: 4px;
-  background: rgba(0, 0, 0, 0.12);
-}
-
-.screen-nav__progress-bar {
-  height: 100%;
-  width: 0;
-  background: #fff;
-  animation-name: rotation-progress;
-  animation-timing-function: linear;
-  animation-fill-mode: forwards;
-}
-
-@keyframes rotation-progress {
-  from { width: 0; }
-  to   { width: 100%; }
 }
 
 /* ---------- Páginas ---------- */
@@ -187,12 +194,15 @@ select {
 .page {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 28px 16px 40px;
+  padding: 32px 16px 48px;
 }
 
 .page h1 {
-  margin: 0 0 6px;
-  font-size: 1.75rem;
+  margin: 0 0 4px;
+  font-size: 2.25rem;
+  font-weight: 800;
+  line-height: 1.15;
+  color: var(--text-body);
 }
 
 .page__subtitle {
@@ -210,47 +220,16 @@ select {
 }
 
 .page__head .page__subtitle {
-  margin-bottom: 20px;
-}
-
-.cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 16px;
-}
-
-.card {
-  text-align: left;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-top: 4px solid var(--red);
-  border-radius: 8px;
-  padding: 24px;
-  cursor: pointer;
-  transition: border-color 150ms, box-shadow 150ms;
-}
-
-.card:hover {
-  border-color: var(--red);
-  box-shadow: 0 4px 14px rgba(255, 32, 32, 0.15);
-}
-
-.card h2 {
-  margin: 0 0 8px;
-  font-size: 1.15rem;
-}
-
-.card p {
-  margin: 0;
-  color: var(--text-muted);
+  margin-bottom: 24px;
 }
 
 .placeholder {
-  border: 2px dashed var(--border);
-  border-radius: 8px;
+  background: var(--surface);
+  border-radius: var(--shape-lg);
   padding: 48px 16px;
   text-align: center;
   color: var(--text-muted);
+  font-weight: 600;
 }
 
 /* ---------- Status da API ---------- */
@@ -259,12 +238,12 @@ select {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 12px;
-  border-radius: 6px;
-  font-size: 0.9rem;
+  padding: 8px 14px;
+  border-radius: var(--shape-sm);
+  font-size: 0.85rem;
+  font-weight: 600;
   color: var(--text-muted);
-  background: var(--surface-alt);
-  border: 1px solid var(--border);
+  background: var(--surface);
 }
 
 .api-status__dot {
@@ -279,14 +258,14 @@ select {
   max-width: 560px;
   color: var(--warn);
   background: var(--warn-bg);
-  border-color: var(--warn-border);
+  border: 1px solid var(--warn-border);
 }
 
 /* ---------- Avisos ---------- */
 
 .notice {
   padding: 12px 16px;
-  border-radius: 8px;
+  border-radius: var(--shape-md);
   margin-bottom: 20px;
   font-weight: 600;
 }
@@ -301,7 +280,7 @@ select {
   display: inline-block;
   padding: 2px 8px;
   border-radius: 999px;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 700;
   white-space: nowrap;
 }
@@ -317,7 +296,7 @@ select {
 .reactors {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 16px;
+  gap: 18px;
 }
 
 /* API fora do ar: dados da última resposta ficam esmaecidos. */
@@ -331,20 +310,18 @@ select {
   flex-direction: column;
   gap: 14px;
   background: var(--surface);
-  border: 1px solid var(--border);
-  border-top: 5px solid var(--red);
-  border-radius: 10px;
-  padding: 16px 18px 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  border-radius: var(--shape-lg);
+  padding: 20px 22px 14px;
 }
 
-/* Tanque sem leitura nova: cinza + listra âmbar, para não parecer dado atual. */
+/* Tanque sem leitura nova: fundo branco com borda tracejada âmbar, para não parecer dado atual. */
 .reactor.is-stale {
-  border-top-color: var(--warn-border);
-  background: var(--surface-alt);
+  background: var(--bg);
+  border: 2px dashed var(--warn-border);
 }
 
 .reactor.is-stale .reactor__id,
+.reactor.is-stale .reactor__opcode,
 .reactor.is-stale .reactor__percent {
   color: var(--text-muted);
 }
@@ -361,7 +338,7 @@ select {
 
 .reactor__id {
   margin: 0;
-  font-size: 1.6rem;
+  font-size: 1.75rem;
   font-weight: 800;
   color: var(--red);
   line-height: 1.1;
@@ -369,15 +346,11 @@ select {
 
 .reactor__opcode {
   margin-left: auto;
-  font-size: 1.35rem;
+  font-size: 1.3rem;
   font-weight: 800;
-  color: var(--text);
+  color: var(--text-body);
   overflow-wrap: anywhere;
   text-align: right;
-}
-
-.reactor.is-stale .reactor__opcode {
-  color: var(--text-muted);
 }
 
 /* Status da OP — paleta da IHM (tabela de códigos em src/config/opStatus.js).
@@ -388,8 +361,8 @@ select {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 7px 10px;
-  border-radius: 6px;
+  padding: 9px 14px;
+  border-radius: var(--shape-md);
   font-weight: 800;
   background: var(--ihm-bg);
   color: var(--ihm-fg);
@@ -416,16 +389,15 @@ select {
 
 /* Código que não está na tabela: sem cor de estado, borda tracejada. */
 .op-status--desconhecido {
-  --ihm-bg: var(--surface);
+  --ihm-bg: var(--bg);
   --ihm-fg: var(--text-muted);
-  border: 2px dashed var(--border);
+  border: 2px dashed var(--line);
 }
 
 /* Tanque sem leitura nova: status em cinza, para não parecer o estado atual. */
 .reactor.is-stale .op-status {
-  --ihm-bg: var(--surface-alt);
+  --ihm-bg: var(--surface);
   --ihm-fg: var(--text-muted);
-  border: 1px solid var(--border);
 }
 
 .reactor__op {
@@ -441,7 +413,7 @@ select {
 
 .label,
 .reactor__grid dt {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -457,10 +429,12 @@ select {
 .value--strong {
   font-weight: 700;
   font-size: 1.05rem;
+  color: var(--text-body);
 }
 
 .muted {
   color: var(--text-muted);
+  font-weight: 400;
 }
 
 .reactor__progress-head {
@@ -468,21 +442,26 @@ select {
   justify-content: space-between;
   align-items: baseline;
   gap: 8px;
-  margin-bottom: 6px;
-  font-weight: 600;
+  margin-bottom: 8px;
+  font-weight: 700;
+  color: var(--text-body);
 }
 
 .reactor__percent {
-  font-size: 1.35rem;
+  font-size: 1.5rem;
   font-weight: 800;
-  color: var(--red-dark);
+  color: var(--red);
 }
 
 .progress {
   height: 12px;
   border-radius: 999px;
-  background: var(--red-soft);
+  background: #fff;
   overflow: hidden;
+}
+
+.reactor.is-stale .progress {
+  background: var(--surface);
 }
 
 .progress__fill {
@@ -494,7 +473,7 @@ select {
 
 .reactor__remaining {
   margin-top: 6px;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: var(--text-muted);
 }
 
@@ -505,30 +484,113 @@ select {
 
 .reactor__grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  /* Tarefa é curta; "Em produção há 10 h 28 min" precisa de mais espaço. */
+  grid-template-columns: minmax(0, 0.7fr) minmax(0, 1fr) minmax(0, 1.6fr);
   gap: 10px 12px;
   margin: 0;
   padding-top: 12px;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--line);
 }
 
 .reactor__grid dd {
-  font-weight: 600;
+  font-weight: 700;
+  color: var(--text-body);
 }
 
 .reactor__foot {
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   color: var(--text-muted);
   text-align: right;
 }
 
-@media (max-width: 420px) {
+/* ---------- Rodapé (como o do site da Anjo) ---------- */
+
+.site-footer {
+  margin-top: 24px;
+  background: linear-gradient(to bottom, #eb3456, var(--red));
+  color: #fff;
+  border-radius: 16px 16px 0 0;
+  padding: 0 16px;
+}
+
+.site-footer__copy {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 22px 0;
+  text-align: center;
+  font-size: 0.85rem;
+}
+
+/* ---------- Celular ---------- */
+
+@media (max-width: 640px) {
+  /* Anterior/próxima são para TV/teclado: no celular, só as abas. */
+  .screen-nav__controls {
+    display: none;
+  }
+
+  .screen-nav__row {
+    padding-block: 12px 4px;
+  }
+
+  .screen-nav__brand {
+    gap: 10px;
+    font-size: 1.15rem;
+  }
+
+  .screen-nav__logo {
+    height: 32px;
+  }
+
+  .screen-nav__brand-sep {
+    height: 22px;
+  }
+
+  /* Abas dividem a largura toda. */
+  .screen-nav__tabs {
+    flex-wrap: nowrap;
+  }
+
+  .screen-nav__tab {
+    flex: 1;
+    padding: 12px 8px;
+    text-align: center;
+  }
+
+  .page {
+    padding: 20px 12px 32px;
+  }
+
+  .page h1 {
+    font-size: 1.6rem;
+  }
+
+  .page__head .page__subtitle {
+    margin-bottom: 12px;
+  }
+
+  .page__head .api-status {
+    margin-bottom: 16px;
+  }
+
   .reactors {
     grid-template-columns: 1fr;
   }
 
-  .reactor__grid {
-    grid-template-columns: repeat(2, 1fr);
+  .reactor {
+    padding: 16px 16px 12px;
+  }
+
+  .reactor__id {
+    font-size: 1.5rem;
+  }
+
+  .reactor__opcode {
+    font-size: 1.1rem;
+  }
+
+  .site-footer__copy {
+    font-size: 0.75rem;
   }
 }
 

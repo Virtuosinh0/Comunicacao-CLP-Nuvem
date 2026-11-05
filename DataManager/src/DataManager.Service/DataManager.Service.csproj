@@ -10,6 +10,16 @@
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <SelfContained>false</SelfContained>
     <UserSecretsId>dotnet-DataManager.Service-6f1c2a9e-3b7d-4e5a-9c41-2d8b7e0f5a13</UserSecretsId>
+
+    <!-- Ícone (Explorer, Gerenciador de Tarefas, Painel de Controle) e autoria (Propriedades → Detalhes). -->
+    <ApplicationIcon>anjo.ico</ApplicationIcon>
+    <Product>DataManager</Product>
+    <AssemblyTitle>DataManager - leitura dos CLPs (somente leitura)</AssemblyTitle>
+    <Description>Lê as OPs dos CLPs Siemens (somente leitura) e envia para a API.</Description>
+    <Company>LSC Automation</Company>
+    <Authors>LSC Automation</Authors>
+    <Copyright>Copyright © 2026 LSC Automation. All rights reserved</Copyright>
+    <Version>1.0.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
