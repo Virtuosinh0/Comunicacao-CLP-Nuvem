@@ -1,6 +1,6 @@
-# 🏭 Sistema de Monitoramento de Produção em Tempo Real (Industrial IoT & Mobile)
+# 🧪 Acompanhamento de Produção para o Setor Industrial Químico em Nuvem
 
-Este repositório contém a documentação da arquitetura, a definição dos contratos de API REST e a simulação de payloads JSON para o sistema de monitoramento de produção industrial.
+Este repositório contém a documentação da arquitetura, a definição dos contratos de API REST e a simulação de payloads JSON para a solução de acompanhamento de produção industrial em nuvem, voltada ao setor químico.
 
 ## 🛠️ Arquitetura do Sistema
 
@@ -11,27 +11,27 @@ Este repositório contém a documentação da arquitetura, a definição dos con
 [ Serviço Local / Gateway (C# ou C++) ]
        │
        ▼ (HTTP POSTs individuais via IP fixo)
-[ API Java Spring Boot ] ─── (Restrição por IP / IPs Autorizados)
+[ API Java Spring Boot (Nuvem) ] ─── (Restrição por IP / IPs Autorizados)
        │
-       ▼ (HTTP GETs de listas / Polling)
-[ App Mobile (Kotlin) ]
+       ▼ (HTTP GETs de listas / Polling ou WebSockets)
+[ Web App (React) ]
 ```
 
 ### Papel de cada módulo:
 
-1. **CLP Siemens:** Controla os dispositivos físicos do chão de fábrica (tanques/reatores e moinhos).
+1. **CLP Siemens:** Controla os dispositivos físicos do chão de fábrica químico (tanques de mistura, reatores e moinhos).
 
-2. **Serviço Local (C#/C++):** Lê e processa os dados brutos do CLP. Realiza envios individuais via `POST` (uma requisição por OP e uma requisição por Moinho) a partir de um **IP Fixo**.
+2. **Serviço Local (C#/C++):** Lê e processa os dados brutos do CLP. Realiza envios individuais via `POST` (uma requisição por OP e uma requisição por Moinho) a partir de um **IP Fixo** do gateway local para a nuvem.
 
-3. **API Centralizadora (Java Spring Boot):** Atua como middleware seguro. Recebe os payloads individuais, armazena/mantém o estado atual e expõe rotas de consulta (`GET`) que retornam listas consolidadas para **IPs autorizados**.
+3. **API Centralizadora em Nuvem (Java Spring Boot):** Atua como middleware seguro na nuvem. Recebe os payloads individuais, armazena/mantém o estado atual e expõe rotas de consulta (`GET`) que retornam listas consolidadas para **IPs autorizados**.
 
-4. **App Mobile (Kotlin):** Consome as listas de OPs e Moinhos da API para exibição em tempo real nas telas do aplicativo.
+4. **Web App (React):** Interface web interativa e responsiva para exibição em tempo real dos painéis (dashboards) de **Revisão de Produção** (reatores/OPs) e **Moagem** (moinhos).
 
 ---
 
 ## 🔌 Endpoints REST & Payloads JSON
 
-### 1. Ingestão de Dados (Servidor Local ➔ API Spring Boot)
+### 1. Ingestão de Dados (Servidor Local ➔ API Spring Boot em Nuvem)
 
 *Origem restrita ao IP Fixo do servidor local.*
 
@@ -40,7 +40,6 @@ Este repositório contém a documentação da arquitetura, a definição dos con
 * **URL:** `/api/v1/telemetry/reactors`
 * **Método:** `POST`
 * **Request Body:**
-
 ```json
 {
   "reactor_id": "R-300",
@@ -59,7 +58,6 @@ Este repositório contém a documentação da arquitetura, a definição dos con
 * **URL:** `/api/v1/telemetry/mills`
 * **Método:** `POST`
 * **Request Body:**
-
 ```json
 {
   "mill_id": "M-200",
@@ -71,18 +69,17 @@ Este repositório contém a documentação da arquitetura, a definição dos con
 
 ---
 
-### 2. Consulta de Dados (App Mobile ➔ API Spring Boot)
+### 2. Consulta de Dados (Web App React ➔ API Spring Boot em Nuvem)
 
 *Exclusivo para IPs previamente autorizados.*
 
 #### A. Lista de OPs / Reatores em Produção (Tela de Revisão)
 
-Retorna o status atual de todas as OPs/reatores monitorados.
+Retorna o status atual de todas as OPs/reatores monitorados no processo químico para renderização no dashboard React.
 
 * **URL:** `/api/v1/production/reactors`
 * **Método:** `GET`
 * **Response Body:**
-
 ```json
 {
   "total_active_ops": 2,
@@ -114,12 +111,11 @@ Retorna o status atual de todas as OPs/reatores monitorados.
 
 #### B. Lista de Moinhos (Tela de Moagem)
 
-Retorna o resumo de produção acumulada do dia de todos os moinhos.
+Retorna o resumo de produção acumulada do dia de todos os moinhos da planta industrial.
 
 * **URL:** `/api/v1/milling/summary`
 * **Método:** `GET`
 * **Response Body:**
-
 ```json
 {
   "unit": "kg",
@@ -149,7 +145,7 @@ Retorna o resumo de produção acumulada do dia de todos os moinhos.
 
 ## 💻 Tecnologias Previstas
 
-* **Chão de Fábrica:** CLP Siemens (S7-1200 / S7-1500)
-* **Serviço Local (Gateway):** C# (.NET Core) ou C++ (Snap7)
-* **Backend:** Java 17 + Spring Boot (IP Whitelisting Filter)
-* **Mobile App:** Kotlin (Android Studio, Retrofit)
+* **Chão de Fábrica (OT):** CLP Siemens (S7-1200 / S7-1500)
+* **Serviço Local / Gateway:** C# (.NET Core) ou C++ (Snap7)
+* **Backend em Nuvem:** Java 17 + Spring Boot (IP Whitelisting Filter)
+* **Frontend Web:** React (Vite, JavaScript/TypeScript, Axios, HTML5/CSS3)
