@@ -15,14 +15,12 @@ public record ReactorView(
         String opCode,
         String productCode,
         Integer status,
-        Integer priority,
         Double requestedWeightKg,
         Double producedWeightKg,
         Double remainingWeightKg,
         Integer currentStep,
         Instant startTime,
         Instant endTime,
-        String finalDestination,
         Instant lastUpdate,
         boolean stale) {
 }

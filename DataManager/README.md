@@ -45,20 +45,20 @@ Layout do UDT (DB **não otimizado**), definido em [`Plc/OpLayout.cs`](src/DataM
 |-------:|------------------|-------------|-----------------------|
 | 0      | `codigoOp`       | String[14]  | `op_code`             |
 | 16     | `status`         | Int         | `status`              |
-| 18     | `prioridade`     | Int         | `priority`            |
+| 18     | `prioridade`     | Int         | *(não lido)*          |
 | 20     | `quantidadeSP`   | Real        | `requested_weight_kg` |
 | 24     | `quantidadePV`   | Real        | `produced_weight_kg`  |
 | 28     | `nomeProduto`    | String[12]  | `product_code`        |
 | 42     | `dataStart`      | DTL         | `start_time`          |
 | 54     | `dataEnd`        | DTL         | `end_time`            |
-| 66     | `destinoFinal`   | String[10]  | `final_destination`   |
-| 78     | `tarefaAtualInt` | Int         | `current_step`        |
-| **80** | *(tamanho de 1 OP)* | | |
+| 66     | `destinoFinal`   | String[10]  | *(não lido)*          |
+| 90     | `tarefaAtualInt` | Int         | `current_step`        |
+| **160** | *(tamanho de 1 OP, inclui campos não lidos)* | | |
 
-O array inteiro é lido em **uma leitura por CLP** (CLP1: 640 bytes, CLP2: 2000 bytes) e vira um JSON por OP. O `reactor_id` é o nome da OP no catálogo e o `timestamp` é gerado no momento da leitura. DTL zerado ou com o valor inicial `DTL#1970-01-01-00:00:00` vira `null`.
+O array inteiro é lido em **uma leitura por CLP** (CLP1: 1280 bytes, CLP2: 4000 bytes) e vira um JSON por OP. O `reactor_id` é o nome da OP no catálogo e o `timestamp` é gerado no momento da leitura. DTL zerado ou com o valor inicial `DTL#1970-01-01-00:00:00` vira `null`.
 
 ```json
-{"reactor_id":"R301","op_code":"OP12345678901","product_code":"00000-00","status":2,"priority":3,"requested_weight_kg":6500.5,"produced_weight_kg":4900.1,"current_step":15,"start_time":"2026-11-04T08:00:00Z","end_time":null,"final_destination":"TQ-10","timestamp":"2026-11-05T12:00:00Z"}
+{"reactor_id":"R301","op_code":"OP12345678901","product_code":"00000-00","status":2,"requested_weight_kg":6500.5,"produced_weight_kg":4900.1,"current_step":15,"start_time":"2026-11-04T08:00:00Z","timestamp":"2026-11-05T12:00:00Z"}
 ```
 
 > Se o UDT mudar no CLP, atualizar os offsets em `OpLayout.cs`. Para incluir/remover OPs, editar `PlcCatalog.cs`.

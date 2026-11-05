@@ -16,13 +16,11 @@ public sealed record ReactorTelemetry
     [JsonPropertyName("op_code")] public required string OpCode { get; init; }
     [JsonPropertyName("product_code")] public string? ProductCode { get; init; }
     [JsonPropertyName("status")] public int? Status { get; init; }
-    [JsonPropertyName("priority")] public int? Priority { get; init; }
     [JsonPropertyName("requested_weight_kg")] public double? RequestedWeightKg { get; init; }
     [JsonPropertyName("produced_weight_kg")] public double? ProducedWeightKg { get; init; }
     [JsonPropertyName("current_step")] public int? CurrentStep { get; init; }
     [JsonPropertyName("start_time")] public DateTime? StartTime { get; init; }
     [JsonPropertyName("end_time")] public DateTime? EndTime { get; init; }
-    [JsonPropertyName("final_destination")] public string? FinalDestination { get; init; }
 
     /// <summary>Só no envio individual; no lote vai uma vez no topo.</summary>
     [JsonPropertyName("timestamp")] public DateTime? Timestamp { get; init; }

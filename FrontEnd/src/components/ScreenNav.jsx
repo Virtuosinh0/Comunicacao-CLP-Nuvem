@@ -14,6 +14,7 @@ export default function ScreenNav() {
   return (
     <header className="screen-nav">
       <div className="screen-nav__row">
+        <span className="screen-nav__brand">Produção</span>
         <nav className="screen-nav__tabs" aria-label="Telas">
           {screens.map((screen) => (
             <button

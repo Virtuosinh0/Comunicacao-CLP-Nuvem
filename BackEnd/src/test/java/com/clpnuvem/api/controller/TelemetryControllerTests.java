@@ -51,9 +51,9 @@ class TelemetryControllerTests {
     void batchUpdatesStateAndIdleTankLeavesList() throws Exception {
         postBatch("""
                 {"plc_id":"CLP2","timestamp":"2026-11-05T14:49:07Z","reactors":[
-                  {"reactor_id":"R210","op_code":"AEMEKL01001","product_code":"P62475","status":2,"priority":999,
+                  {"reactor_id":"R210","op_code":"AEMEKL01001","product_code":"P62475","status":2,
                    "requested_weight_kg":6500,"produced_weight_kg":3767.4,"current_step":3,
-                   "start_time":"2026-11-05T14:14:47.5815014Z","final_destination":"R210"},
+                   "start_time":"2026-11-05T14:14:47.5815014Z"},
                   {"reactor_id":"R211","op_code":""},
                   {"reactor_id":"R371","op_code":"AEMEMC01001","requested_weight_kg":5000,"produced_weight_kg":4661}
                 ]}""").andExpect(status().isNoContent());

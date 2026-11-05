@@ -1,11 +1,22 @@
+/* Tema branco + vermelho vivo rgb(255, 32, 32).
+ * O vermelho é a cor da marca (barra, destaques, progresso). Estados de alerta usam
+ * âmbar/cinza para não se confundirem com o vermelho do tema. */
 :root {
-  --bg: #f4f6f8;
+  --red: rgb(255, 32, 32);
+  --red-dark: rgb(200, 16, 16);   /* hover / texto vermelho pequeno sobre branco */
+  --red-soft: rgb(255, 235, 235);
+
+  --bg: #ffffff;
   --surface: #ffffff;
-  --border: #d9e2ec;
-  --text: #1f2933;
-  --text-muted: #52606d;
-  --accent: #1f6feb;
-  --accent-soft: #e7f0fd;
+  --surface-alt: #f7f7f8;
+  --border: #e6e6e9;
+  --text: #1c1c1f;
+  --text-muted: #63636b;
+
+  --warn: #92400e;
+  --warn-bg: #fff7e6;
+  --warn-border: #f5c26b;
+  --ok: #15803d;
 
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   color: var(--text);
@@ -27,6 +38,11 @@ select {
   color: inherit;
 }
 
+:focus-visible {
+  outline: 3px solid var(--red);
+  outline-offset: 2px;
+}
+
 /* ---------- Layout ---------- */
 
 .app {
@@ -45,51 +61,58 @@ select {
   to   { opacity: 1; transform: none; }
 }
 
-/* ---------- Navegação entre telas ---------- */
+/* ---------- Barra superior (vermelha) ---------- */
 
 .screen-nav {
   position: sticky;
   top: 0;
   z-index: 10;
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
+  background: var(--red);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 }
 
 .screen-nav__row {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 8px 16px;
+  padding: 10px 16px;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
   gap: 8px 16px;
+}
+
+.screen-nav__brand {
+  font-weight: 800;
+  font-size: 1.15rem;
+  letter-spacing: 0.02em;
+  margin-right: 8px;
 }
 
 .screen-nav__tabs {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
+  flex: 1;
 }
 
 .screen-nav__tab {
   border: 0;
   background: transparent;
-  padding: 8px 12px;
+  padding: 8px 14px;
   border-radius: 6px;
   cursor: pointer;
-  color: var(--text-muted);
+  color: #fff;
+  font-weight: 600;
 }
 
 .screen-nav__tab:hover {
-  background: var(--bg);
-  color: var(--text);
+  background: rgba(255, 255, 255, 0.18);
 }
 
 .screen-nav__tab.is-active {
-  background: var(--accent-soft);
-  color: var(--accent);
-  font-weight: 600;
+  background: #fff;
+  color: var(--red-dark);
 }
 
 .screen-nav__controls {
@@ -99,18 +122,19 @@ select {
 }
 
 .screen-nav__icon {
-  width: 32px;
-  height: 32px;
-  border: 1px solid var(--border);
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(255, 255, 255, 0.7);
   border-radius: 6px;
-  background: var(--surface);
+  background: transparent;
+  color: #fff;
   cursor: pointer;
   font-size: 1.2rem;
   line-height: 1;
 }
 
 .screen-nav__icon:hover {
-  background: var(--bg);
+  background: rgba(255, 255, 255, 0.18);
 }
 
 .screen-nav__rotate {
@@ -118,26 +142,36 @@ select {
   align-items: center;
   gap: 6px;
   font-size: 0.9rem;
+  font-weight: 600;
   cursor: pointer;
   user-select: none;
 }
 
+.screen-nav__rotate input {
+  accent-color: #fff;
+}
+
 .screen-nav__interval {
-  border: 1px solid var(--border);
+  border: 1px solid rgba(255, 255, 255, 0.7);
   border-radius: 6px;
-  background: var(--surface);
+  background: #fff;
+  color: var(--text);
   padding: 4px 6px;
 }
 
+.screen-nav :focus-visible {
+  outline-color: #fff;
+}
+
 .screen-nav__progress {
-  height: 3px;
-  background: transparent;
+  height: 4px;
+  background: rgba(0, 0, 0, 0.12);
 }
 
 .screen-nav__progress-bar {
   height: 100%;
   width: 0;
-  background: var(--accent);
+  background: #fff;
   animation-name: rotation-progress;
   animation-timing-function: linear;
   animation-fill-mode: forwards;
@@ -151,18 +185,32 @@ select {
 /* ---------- Páginas ---------- */
 
 .page {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 32px 16px;
+  padding: 28px 16px 40px;
 }
 
 .page h1 {
-  margin: 0 0 8px;
+  margin: 0 0 6px;
+  font-size: 1.75rem;
 }
 
 .page__subtitle {
-  margin: 0 0 32px;
+  margin: 0 0 28px;
   color: var(--text-muted);
+}
+
+.page__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px 24px;
+  margin-bottom: 4px;
+}
+
+.page__head .page__subtitle {
+  margin-bottom: 20px;
 }
 
 .cards {
@@ -175,6 +223,7 @@ select {
   text-align: left;
   background: var(--surface);
   border: 1px solid var(--border);
+  border-top: 4px solid var(--red);
   border-radius: 8px;
   padding: 24px;
   cursor: pointer;
@@ -182,8 +231,8 @@ select {
 }
 
 .card:hover {
-  border-color: var(--accent);
-  box-shadow: 0 2px 8px rgba(31, 111, 235, 0.12);
+  border-color: var(--red);
+  box-shadow: 0 4px 14px rgba(255, 32, 32, 0.15);
 }
 
 .card h2 {
@@ -204,8 +253,293 @@ select {
   color: var(--text-muted);
 }
 
+/* ---------- Status da API ---------- */
+
+.api-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+}
+
+.api-status__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ok);
+}
+
+.api-status--error {
+  display: block;
+  max-width: 560px;
+  color: var(--warn);
+  background: var(--warn-bg);
+  border-color: var(--warn-border);
+}
+
+/* ---------- Avisos ---------- */
+
+.notice {
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+
+.notice--stale {
+  color: var(--warn);
+  background: var(--warn-bg);
+  border: 1px solid var(--warn-border);
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.badge--stale {
+  color: var(--warn);
+  background: var(--warn-bg);
+  border: 1px solid var(--warn-border);
+}
+
+/* ---------- Tanques (Revisão de Produção) ---------- */
+
+.reactors {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+/* API fora do ar: dados da última resposta ficam esmaecidos. */
+.reactors.is-outdated {
+  opacity: 0.55;
+  filter: grayscale(0.6);
+}
+
+.reactor {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 5px solid var(--red);
+  border-radius: 10px;
+  padding: 16px 18px 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+/* Tanque sem leitura nova: cinza + listra âmbar, para não parecer dado atual. */
+.reactor.is-stale {
+  border-top-color: var(--warn-border);
+  background: var(--surface-alt);
+}
+
+.reactor.is-stale .reactor__id,
+.reactor.is-stale .reactor__percent {
+  color: var(--text-muted);
+}
+
+.reactor.is-stale .progress__fill {
+  background: #b9b9c0;
+}
+
+.reactor__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.reactor__id {
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--red);
+  line-height: 1.1;
+}
+
+.reactor__plc {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 6px;
+}
+
+.reactor__head .badge {
+  margin-left: auto;
+}
+
+/* Status da OP — paleta da IHM (tabela de códigos em src/config/opStatus.js).
+ * Texto preto ou branco conforme o contraste de cada cor. */
+.op-status {
+  --ihm-bg: rgb(48, 48, 48);
+  --ihm-fg: #fff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 6px;
+  font-weight: 800;
+  background: var(--ihm-bg);
+  color: var(--ihm-fg);
+}
+
+.op-status__title {
+  margin-right: auto;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.85;
+}
+
+.op-status--ok         { --ihm-bg: rgb(48, 48, 48);   --ihm-fg: #fff; }
+.op-status--ativo      { --ihm-bg: rgb(0, 224, 0);    --ihm-fg: #000; }
+.op-status--pausado    { --ihm-bg: rgb(240, 192, 64); --ihm-fg: #000; }
+.op-status--manual     { --ihm-bg: rgb(255, 160, 0);  --ihm-fg: #000; }
+.op-status--descarga   { --ihm-bg: rgb(0, 128, 0);    --ihm-fg: #fff; }
+.op-status--finalizado { --ihm-bg: rgb(0, 176, 240);  --ihm-fg: #000; }
+.op-status--extra      { --ihm-bg: rgb(128, 0, 128);  --ihm-fg: #fff; }
+.op-status--erro       { --ihm-bg: rgb(255, 32, 32);  --ihm-fg: #fff; }
+.op-status--cancela    { --ihm-bg: rgb(176, 0, 0);    --ihm-fg: #fff; }
+
+/* Código que não está na tabela: sem cor de estado, borda tracejada. */
+.op-status--desconhecido {
+  --ihm-bg: var(--surface);
+  --ihm-fg: var(--text-muted);
+  border: 2px dashed var(--border);
+}
+
+/* Tanque sem leitura nova: status em cinza, para não parecer o estado atual. */
+.reactor.is-stale .op-status {
+  --ihm-bg: var(--surface-alt);
+  --ihm-fg: var(--text-muted);
+  border: 1px solid var(--border);
+}
+
+.reactor__op {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 16px;
+}
+
+.reactor__op > div,
+.reactor__grid > div {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.label,
+.reactor__grid dt {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+.value,
+.reactor__grid dd {
+  margin: 2px 0 0;
+  overflow-wrap: anywhere;
+}
+
+.value--strong {
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.muted {
+  color: var(--text-muted);
+}
+
+.reactor__progress-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.reactor__percent {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--red-dark);
+}
+
+.progress {
+  height: 12px;
+  border-radius: 999px;
+  background: var(--red-soft);
+  overflow: hidden;
+}
+
+.progress__fill {
+  height: 100%;
+  background: var(--red);
+  border-radius: 999px;
+  transition: width 400ms ease-out;
+}
+
+.reactor__remaining {
+  margin-top: 6px;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.reactor__remaining .over {
+  color: var(--warn);
+  font-weight: 700;
+}
+
+.reactor__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px 12px;
+  margin: 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.reactor__grid dd {
+  font-weight: 600;
+}
+
+.reactor__foot {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  text-align: right;
+}
+
+@media (max-width: 420px) {
+  .reactors {
+    grid-template-columns: 1fr;
+  }
+
+  .reactor__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .screen-view {
     animation: none;
+  }
+
+  .progress__fill {
+    transition: none;
   }
 }

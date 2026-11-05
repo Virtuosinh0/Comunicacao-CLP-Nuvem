@@ -29,13 +29,11 @@ public static class TelemetryMapper
             OpCode = op.CodigoOp.Trim(),
             ProductCode = op.NomeProduto.Trim(),
             Status = op.Status,
-            Priority = op.Prioridade,
             RequestedWeightKg = ToDouble(op.QuantidadeSp),
             ProducedWeightKg = ToDouble(op.QuantidadePv),
             CurrentStep = op.TarefaAtual,
             StartTime = op.DataStart,
             EndTime = op.DataEnd,
-            FinalDestination = op.DestinoFinal.Trim(),
             Timestamp = timestampUtc
         };
     }

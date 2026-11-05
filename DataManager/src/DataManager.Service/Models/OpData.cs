@@ -4,11 +4,9 @@ namespace DataManager.Service.Models;
 public sealed record OpData(
     string CodigoOp,
     short Status,
-    short Prioridade,
     float QuantidadeSp,
     float QuantidadePv,
     string NomeProduto,
     DateTime? DataStart,
     DateTime? DataEnd,
-    string DestinoFinal,
     short TarefaAtual);

@@ -84,13 +84,11 @@ public class TelemetryService {
                 t.opCode().trim(),
                 t.productCode(),
                 t.status(),
-                t.priority(),
                 t.requestedWeightKg(),
                 t.producedWeightKg(),
                 t.currentStep(),
                 t.startTime(),
                 t.endTime(),
-                t.finalDestination(),
                 readAt,
                 receivedAt);
     }

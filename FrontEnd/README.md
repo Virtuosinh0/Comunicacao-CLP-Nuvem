@@ -53,4 +53,24 @@ npm install
 npm run dev
 ```
 
-Acesse `http://localhost:5173`.
+Acesse `http://localhost:5173`. A API precisa estar rodando em `http://localhost:8080`.
+
+## Dados da API
+
+- Em desenvolvimento, o Vite repassa `/api/...` para `http://localhost:8080` (proxy em `vite.config.js`), então a API não precisa de CORS. Outra API: `VITE_API_PROXY=http://host:porta npm run dev`.
+- Em produção, se a API estiver em outro endereço: `VITE_API_BASE_URL=https://api.exemplo.com npm run build`.
+- A tela **Revisão de Produção** busca `GET /api/v1/production/reactors` a cada 5 s (mesmo ciclo do DataManager).
+
+Para não exibir dado desatualizado como se fosse atual:
+
+| Situação | Na tela |
+|---|---|
+| API fora do ar / erro | Aviso âmbar com o horário da falha; os cards ficam esmaecidos com os dados da última resposta |
+| Tanque `stale` (API sem leitura nova do CLP) | Card cinza com selo "Sem atualização" + aviso no topo |
+| Campo ausente | `—` (nunca 0) |
+| Produzido acima do programado | Percentual > 100% e "Acima do programado: X kg" |
+| Sem quantidade programada | Sem barra e sem percentual |
+
+O `status` da OP é traduzido pela tabela em `src/config/opStatus.js` (00 Programado … 11 Finalizada). Código fora da tabela aparece como "Status N (desconhecido)".
+
+Tema: branco + vermelho `rgb(255, 32, 32)` (variáveis no topo de `src/styles/global.css`). Alertas usam âmbar para não se confundirem com o vermelho da marca.

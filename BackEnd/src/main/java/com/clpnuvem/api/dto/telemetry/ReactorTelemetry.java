@@ -19,12 +19,10 @@ public record ReactorTelemetry(
         @NotNull String opCode,
         String productCode,
         Integer status,
-        Integer priority,
         Double requestedWeightKg,
         Double producedWeightKg,
         Integer currentStep,
         Instant startTime,
         Instant endTime,
-        String finalDestination,
         Instant timestamp) {
 }

@@ -50,8 +50,8 @@ public class ProductionService {
                 : s.requestedWeightKg() - s.producedWeightKg();
 
         return new ReactorView(
-                s.plcId(), s.reactorId(), s.opCode(), s.productCode(), s.status(), s.priority(),
+                s.plcId(), s.reactorId(), s.opCode(), s.productCode(), s.status(),
                 s.requestedWeightKg(), s.producedWeightKg(), remaining, s.currentStep(),
-                s.startTime(), s.endTime(), s.finalDestination(), s.readAt(), stale);
+                s.startTime(), s.endTime(), s.readAt(), stale);
     }
 }

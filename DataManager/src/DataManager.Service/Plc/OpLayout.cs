@@ -10,15 +10,15 @@ namespace DataManager.Service.Plc;
 /// Offset  Campo           Tipo        Bytes
 ///   0     codigoOp        String[14]  16
 ///  16     status          Int          2
-///  18     prioridade      Int          2
+///  18     prioridade      Int          2     (não lido)
 ///  20     quantidadeSP    Real         4
 ///  24     quantidadePV    Real         4
 ///  28     nomeProduto     String[12]  14
 ///  42     dataStart       DTL         12
 ///  54     dataEnd         DTL         12
-///  66     destinoFinal    String[10]  12
-///  78     tarefaAtualInt  Int          2
-///  80     (tamanho total de 1 OP)
+///  66     destinoFinal    String[10]  12     (não lido)
+///  90     tarefaAtualInt  Int          2
+/// 160     (tamanho total de 1 OP, inclui campos não lidos)
 /// </code>
 /// Se o UDT mudar no CLP, atualizar os offsets aqui.
 /// </summary>
@@ -26,13 +26,11 @@ public static class OpLayout
 {
     public const int CodigoOp = 0;
     public const int Status = 16;
-    public const int Prioridade = 18;
     public const int QuantidadeSp = 20;
     public const int QuantidadePv = 24;
     public const int NomeProduto = 28;
     public const int DataStart = 42;
     public const int DataEnd = 54;
-    public const int DestinoFinal = 66;
     public const int TarefaAtual = 90;
 
     /// <summary>Bytes ocupados por uma OP no array.</summary>
@@ -40,7 +38,6 @@ public static class OpLayout
 
     private const int CodigoOpSize = 14 + 2;
     private const int NomeProdutoSize = 12 + 2;
-    private const int DestinoFinalSize = 10 + 2;
     private const int DtlSize = 12;
 
     /// <summary>Valor inicial de um DTL no TIA Portal (DTL#1970-01-01-00:00:00) = "sem data".</summary>
@@ -62,13 +59,11 @@ public static class OpLayout
         return new OpData(
             CodigoOp: codigoOp,
             Status: BinaryPrimitives.ReadInt16BigEndian(op[Status..]),
-            Prioridade: BinaryPrimitives.ReadInt16BigEndian(op[Prioridade..]),
             QuantidadeSp: BinaryPrimitives.ReadSingleBigEndian(op[QuantidadeSp..]),
             QuantidadePv: BinaryPrimitives.ReadSingleBigEndian(op[QuantidadePv..]),
             NomeProduto: PlcValueDecoder.ReadString(op.Slice(NomeProduto, NomeProdutoSize)),
             DataStart: ReadOptionalDtl(op.Slice(DataStart, DtlSize), clockIsUtc),
             DataEnd: ReadOptionalDtl(op.Slice(DataEnd, DtlSize), clockIsUtc),
-            DestinoFinal: PlcValueDecoder.ReadString(op.Slice(DestinoFinal, DestinoFinalSize)),
             TarefaAtual: BinaryPrimitives.ReadInt16BigEndian(op[TarefaAtual..]));
     }
 
