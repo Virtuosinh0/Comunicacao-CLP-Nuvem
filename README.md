@@ -199,12 +199,55 @@ No celular:
 
 ## N1C: Entrega final
 
-> Seção a completar conforme os requisitos da entrega final.
+- [x] Evolução do trabalho desde a proposta (N1A) até a solução final ([veja abaixo](#da-proposta-à-solução-final))
+- [x] Demonstração da solução em funcionamento ([evidências da N1B](#evidências))
+- [x] Documentação final ([veja abaixo](#documentação))
+- [x] Apresentação
 
-- [ ] Evolução do trabalho desde a proposta (N1A) até a solução final
-- [ ] Demonstração da solução em funcionamento
-- [ ] Documentação final
-- [ ] Apresentação
+### Da proposta à solução final
+
+Tudo o que foi proposto na N1A foi entregue e está em funcionamento na Anjo Tintas:
+
+| Proposto na N1A | Entregue |
+|---|---|
+| Ler os dados das OPs direto dos CLPs Siemens | DataManager lê os **2 CLPs S7-1500** (33 tanques) pelo protocolo S7, sem escrever nada neles |
+| Serviço local de coleta em C# | Serviço Windows em **.NET 8** com início automático, leitura a cada 5 s e logs no Visualizador de Eventos |
+| API em Java com Spring Boot | API com endpoints de recebimento e consulta, proteção contra dado falso e controle de acesso por IP |
+| Interface web em React | Painel de **Revisão de Produção** responsivo, usado no desktop, na TV e no celular |
+| Acompanhamento remoto em tempo real | A tela atualiza a cada 5 s e avisa quando um dado está desatualizado |
+
+### Aplicação dos conhecimentos da trilha
+
+**Automação Industrial**
+- Estrutura de dados no CLP: DB10 com um array de UDT (`udtOPx`), um elemento por tanque.
+- Configuração do CLP para comunicação externa: PUT/GET liberado e DB sem acesso otimizado.
+- Protocolo S7 (porta TCP 102) e decodificação dos tipos do CLP: String, Int, Real e DTL, em big-endian.
+- Leitura sem interferir no processo: o serviço só lê, nunca escreve no CLP.
+
+**Engenharia de Software**
+- Arquitetura em camadas: CLP, coleta, API e frontend, cada uma com responsabilidade única.
+- Contrato REST com JSON, documentado na [Documentação técnica](DOCUMENTACAO-TECNICA.md).
+- Confiabilidade dos dados: validação na entrada, descarte de leitura fora de ordem e marcação de dado desatualizado.
+- Segurança: listas de IPs autorizados separando quem envia de quem consulta.
+- Testes automatizados da API (JUnit + MockMvc).
+- Implantação automatizada: um script compila os três módulos e instala os serviços.
+
+### Documentação
+
+| Documento | Conteúdo |
+|---|---|
+| [Documentação técnica](DOCUMENTACAO-TECNICA.md) | Endpoints REST e payloads JSON |
+| [Guia de instalação](INSTALACAO.md) | Ferramentas, bibliotecas e configuração do CLP no TIA Portal |
+| [DataManager](DataManager/README.md) | Layout do UDT, configuração dos CLPs e envio para a API |
+| [BackEnd](BackEnd/README.md) | Endpoints, regras contra dado falso e segurança por IP |
+| [FrontEnd](FrontEnd/README.md) | Telas, comportamento com dado desatualizado e identidade visual |
+| [Instalação como serviços](Instalacao/README.md) | Instalação, configuração e logs dos Serviços Windows |
+
+### Conclusão
+
+O projeto entregou o fluxo completo **CLP → DataManager → API → tela**. Com ele, as ordens de produção que antes só apareciam nas IHMs podem ser acompanhadas pelo navegador, de qualquer computador ou celular autorizado.
+
+Além de mostrar os dados, a solução indica claramente quando um dado deixou de ser atual. Uma falha na comunicação nunca aparece como se fosse leitura real, o que é essencial para quem toma decisões a partir do painel.
 
 ---
 
