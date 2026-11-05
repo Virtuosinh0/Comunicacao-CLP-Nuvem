@@ -1,4 +1,4 @@
-package com.clpnuvem.api.model;
+package com.clpnuvem.api.models.reactor;
 
 import java.time.Instant;
 

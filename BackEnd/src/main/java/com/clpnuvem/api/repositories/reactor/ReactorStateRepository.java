@@ -1,6 +1,6 @@
-package com.clpnuvem.api.repository;
+package com.clpnuvem.api.repositories.reactor;
 
-import com.clpnuvem.api.model.ReactorState;
+import com.clpnuvem.api.models.reactor.ReactorState;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;

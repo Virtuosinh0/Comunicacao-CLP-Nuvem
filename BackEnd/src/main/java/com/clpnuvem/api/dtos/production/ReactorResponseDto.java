@@ -1,4 +1,4 @@
-package com.clpnuvem.api.dto.production;
+package com.clpnuvem.api.dtos.production;
 
 import java.time.Instant;
 
@@ -9,7 +9,7 @@ import java.time.Instant;
  * @param lastUpdate        quando o CLP foi lido
  * @param stale             true = sem leitura nova há mais que telemetry.stale-after (valores podem não ser os atuais)
  */
-public record ReactorView(
+public record ReactorResponseDto(
         String plcId,
         String reactorId,
         String opCode,

@@ -1,12 +1,12 @@
-package com.clpnuvem.api.controller;
+package com.clpnuvem.api.controllers.production;
 
-import com.clpnuvem.api.dto.production.ReactorsResponse;
-import com.clpnuvem.api.service.ProductionService;
+import com.clpnuvem.api.dtos.production.ReactorsResponseDto;
+import com.clpnuvem.api.services.production.ProductionService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Consultas usadas pelo Web App. */
+/** Consultas usadas pelo Web App. Só IPs de security.allowed-ips.viewers. */
 @RestController
 @RequestMapping("/api/v1/production")
 public class ProductionController {
@@ -18,7 +18,7 @@ public class ProductionController {
     }
 
     @GetMapping("/reactors")
-    public ReactorsResponse reactors() {
+    public ReactorsResponseDto reactors() {
         return service.activeReactors();
     }
 }

@@ -1,11 +1,11 @@
-package com.clpnuvem.api.config;
+package com.clpnuvem.api.configurations;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.time.Duration;
 
 /**
- * Seção "telemetry" do application.yml.
+ * Seção "telemetry" do application.properties.
  *
  * @param staleAfter   sem leitura nova há mais que isso → tanque marcado como desatualizado (stale)
  * @param maxClockSkew timestamp de leitura mais no futuro que isso é rejeitado

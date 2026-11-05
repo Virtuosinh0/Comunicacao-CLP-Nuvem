@@ -1,10 +1,11 @@
-package com.clpnuvem.api.service;
+package com.clpnuvem.api.services.production;
 
-import com.clpnuvem.api.config.TelemetryProperties;
-import com.clpnuvem.api.dto.production.ReactorView;
-import com.clpnuvem.api.dto.production.ReactorsResponse;
-import com.clpnuvem.api.model.ReactorState;
-import com.clpnuvem.api.repository.ReactorStateRepository;
+import com.clpnuvem.api.configurations.TelemetryProperties;
+import com.clpnuvem.api.dtos.production.ReactorResponseDto;
+import com.clpnuvem.api.dtos.production.ReactorsResponseDto;
+import com.clpnuvem.api.mappers.reactor.ReactorMapper;
+import com.clpnuvem.api.models.reactor.ReactorState;
+import com.clpnuvem.api.repositories.reactor.ReactorStateRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.Clock;
@@ -16,24 +17,27 @@ import java.util.List;
 public class ProductionService {
 
     private final ReactorStateRepository repository;
+    private final ReactorMapper mapper;
     private final TelemetryProperties properties;
     private final Clock clock;
 
-    public ProductionService(ReactorStateRepository repository, TelemetryProperties properties, Clock clock) {
+    public ProductionService(ReactorStateRepository repository, ReactorMapper mapper,
+                             TelemetryProperties properties, Clock clock) {
         this.repository = repository;
+        this.mapper = mapper;
         this.properties = properties;
         this.clock = clock;
     }
 
     /** Somente tanques com OP ativa (op_code preenchido), cada um indicando se o dado está desatualizado. */
-    public ReactorsResponse activeReactors() {
+    public ReactorsResponseDto activeReactors() {
         List<ReactorState> all = repository.findAll();
         Instant staleBefore = clock.instant().minus(properties.staleAfter());
 
-        List<ReactorView> active = all.stream()
+        List<ReactorResponseDto> active = all.stream()
                 .filter(ReactorState::hasOp)
                 .sorted(Comparator.comparing(ReactorState::plcId).thenComparing(ReactorState::reactorId))
-                .map(s -> toView(s, s.receivedAt().isBefore(staleBefore)))
+                .map(s -> mapper.toDto(s, s.receivedAt().isBefore(staleBefore)))
                 .toList();
 
         Instant lastUpdate = all.stream()
@@ -41,17 +45,6 @@ public class ProductionService {
                 .max(Comparator.naturalOrder())
                 .orElse(null);
 
-        return new ReactorsResponse(active.size(), lastUpdate, active);
-    }
-
-    private static ReactorView toView(ReactorState s, boolean stale) {
-        Double remaining = s.requestedWeightKg() == null || s.producedWeightKg() == null
-                ? null
-                : s.requestedWeightKg() - s.producedWeightKg();
-
-        return new ReactorView(
-                s.plcId(), s.reactorId(), s.opCode(), s.productCode(), s.status(),
-                s.requestedWeightKg(), s.producedWeightKg(), remaining, s.currentStep(),
-                s.startTime(), s.endTime(), s.readAt(), stale);
+        return new ReactorsResponseDto(active.size(), lastUpdate, active);
     }
 }

@@ -90,9 +90,27 @@ try {
     foreach ($s in $servicos) {
         Etapa "Serviço $($s.Nome)"
         $pasta = Join-Path $Destino $s.Pasta
-        # /MIR espelha a pasta publicada; logs da API são preservados.
-        robocopy (Join-Path $Publish $s.Pasta) $pasta /MIR /XD logs /NFL /NDL /NJH /NJS /NP | Out-Null
+        # /MIR espelha a pasta publicada; logs e configuração local da API (config\) são preservados.
+        robocopy (Join-Path $Publish $s.Pasta) $pasta /MIR /XD logs config /NFL /NDL /NJH /NJS /NP | Out-Null
         if ($LASTEXITCODE -ge 8) { throw "robocopy falhou para $pasta ($LASTEXITCODE)" }
+
+        # API: IPs autorizados desta instalação. Criado só na primeira vez; depois é seu (não é sobrescrito).
+        $configApi = Join-Path $pasta 'config\application.properties'
+        if ($s.Nome -eq 'ClpApi' -and -not (Test-Path $configApi)) {
+            New-Item (Split-Path $configApi) -ItemType Directory -Force | Out-Null
+            Set-Content $configApi -Encoding ASCII -Value @(
+                '# Configuracao local da API (sobrepoe o application.properties de dentro do jar).',
+                '# Alterou? Reinicie o servico ClpApi (Reiniciar-Servicos-CLP.bat).',
+                '#',
+                '# IPs autorizados: IP (192.168.0.10) ou faixa CIDR (192.168.0.0/24), separados por virgula.',
+                '# Fora da lista -> 403 e "ACESSO BLOQUEADO" no log da API.',
+                '#',
+                '# Quem pode ENVIAR leituras (DataManager):',
+                'security.allowed-ips.gateway=127.0.0.1,::1',
+                '# Quem pode VER a tela (PCs, TVs). Ex.: 127.0.0.1,::1,192.168.0.50,192.168.0.51',
+                'security.allowed-ips.viewers=127.0.0.1,::1')
+            Write-Host "Criado: $configApi (IPs autorizados)"
+        }
 
         $exe = Join-Path $pasta $s.Exe
         if (-not (Get-Service $s.Nome -ErrorAction SilentlyContinue)) {

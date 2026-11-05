@@ -25,6 +25,7 @@ Alterou o código? Rode de novo: é o mesmo script para atualizar.
 ## Configuração de cada serviço
 
 - **DataManager:** `C:\Automatec\Servicos\DataManager\appsettings.json` (CLPs, intervalo). A URL da API vem da variável `Api__BaseUrl=http://localhost:8080`, definida só para o serviço (registro: `HKLM\SYSTEM\CurrentControlSet\Services\DataManager`, valor `Environment`). Os IPs dos CLPs vêm das variáveis de ambiente de **máquina** (`CLP_Anjo`, `CLP_Producao`).
+- **ClpApi — IPs autorizados:** `C:\Automatec\Servicos\Api\config\application.properties` (criado na primeira instalação e **nunca sobrescrito**). Por padrão só este computador (`127.0.0.1,::1`). Para liberar uma TV/PC: acrescente o IP em `security.allowed-ips.viewers` e reinicie o `ClpApi`. Detalhes no README do BackEnd.
 - **ClpApi:** `C:\Automatec\Servicos\Api\appsettings.json` (`Java:Arguments` para argumentos extras da API). O caminho do `java.exe` é gravado na instalação (`Java__JavaExe`).
 
 O `Instalar-Servicos.bat` sobrescreve os `appsettings.json` da pasta de serviços com os do repositório: altere no repositório.

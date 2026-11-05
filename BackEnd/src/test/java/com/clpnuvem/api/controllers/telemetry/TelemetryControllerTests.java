@@ -1,4 +1,4 @@
-package com.clpnuvem.api.controller;
+package com.clpnuvem.api.controllers.telemetry;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
