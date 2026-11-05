@@ -367,15 +367,6 @@ select {
   line-height: 1.1;
 }
 
-.reactor__plc {
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--text-muted);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 1px 6px;
-}
-
 .reactor__head .badge {
   margin-left: auto;
 }

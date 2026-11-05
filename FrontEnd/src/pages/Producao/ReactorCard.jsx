@@ -25,7 +25,6 @@ export default function ReactorCard({ reactor, now }) {
     <article className={`reactor${r.stale ? ' is-stale' : ''}`} aria-label={`Tanque ${r.reactor_id}`}>
       <header className="reactor__head">
         <h2 className="reactor__id">{r.reactor_id}</h2>
-        <span className="reactor__plc">{r.plc_id}</span>
         {r.stale && (
           <span className="badge badge--stale" title="A API não recebe leitura nova deste tanque. Os valores podem não ser os atuais.">
             Sem atualização
