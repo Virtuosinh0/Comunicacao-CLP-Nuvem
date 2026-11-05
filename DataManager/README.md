@@ -107,6 +107,19 @@ Se a configuração tiver erro (CLP sem conexão no appsettings, DB inválido, f
 - `ClockIsUtc`: se o relógio dos CLPs está em UTC ou no horário local do gateway.
 - Cada CLP é lido de forma independente: se um cair, o outro continua sendo lido.
 
+## Envio para a API
+
+`appsettings.json` → seção `Api`:
+
+```json
+"Api": { "BaseUrl": "http://localhost:8080", "ReactorMode": "Batch", "TimeoutSeconds": 10 }
+```
+
+- `BaseUrl` vazio: não envia, só registra no log o JSON que seria enviado.
+- `ReactorMode`: `Batch` = 1 POST por CLP com todas as OPs (`/api/v1/telemetry/reactors/batch`); `Single` = 1 POST por OP (`/api/v1/telemetry/reactors`).
+- Tanque com `codigoOp` vazio: os outros campos não são decodificados e o tanque vai só como `{"reactor_id":"R211","op_code":""}`.
+- A cada ciclo o log mostra o tempo de cada CLP: `CLP2: 172 ms (leitura 140 ms, conversão 4.7 ms, envio 28 ms em 1 POST) - 2/25 OP(s) ativas`.
+
 ## Como rodar
 
 Requisitos: **.NET 8 SDK** (Windows).

@@ -32,7 +32,21 @@ builder.Services.AddSingleton<IReadOnlyList<PlcStation>>(sp => TagMapResolver.Re
     sp.GetRequiredService<IOptions<PlcOptions>>().Value,
     sp.GetRequiredService<IOptions<TagMapOptions>>().Value));
 
-builder.Services.AddSingleton<ITelemetrySender, LoggingTelemetrySender>();
+// Api:BaseUrl preenchido → envia para a API; vazio → só registra o JSON no log.
+var apiSection = builder.Configuration.GetSection(ApiOptions.SectionName);
+builder.Services.Configure<ApiOptions>(apiSection);
+var apiBaseUrl = apiSection.GetValue<string>(nameof(ApiOptions.BaseUrl));
+if (string.IsNullOrWhiteSpace(apiBaseUrl))
+{
+    builder.Services.AddSingleton<ITelemetrySender, LoggingTelemetrySender>();
+}
+else
+{
+    if (!Uri.TryCreate(apiBaseUrl, UriKind.Absolute, out _))
+        throw new InvalidOperationException($"appsettings.json: Api:BaseUrl '{apiBaseUrl}' inválida.");
+
+    builder.Services.AddSingleton<ITelemetrySender, HttpTelemetrySender>();
+}
 builder.Services.AddHostedService<Worker>();
 
 var host = builder.Build();

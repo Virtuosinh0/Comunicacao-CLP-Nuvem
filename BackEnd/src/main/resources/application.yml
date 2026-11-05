@@ -1,6 +1,9 @@
 spring:
   application:
     name: clp-nuvem-api
+  jackson:
+    # JSON em snake_case (reactor_id, op_code, ...) <-> records Java em camelCase.
+    property-naming-strategy: SNAKE_CASE
 
 server:
   port: 8080

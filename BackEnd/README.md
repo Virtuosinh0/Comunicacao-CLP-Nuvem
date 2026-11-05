@@ -27,4 +27,21 @@ cd BackEnd
 mvn spring-boot:run
 ```
 
-A API sobe em `http://localhost:8080` (ainda sem endpoints).
+A API sobe em `http://localhost:8080`. Testes: `mvn test`.
+
+## Endpoints
+
+| Método | URL | Uso |
+|---|---|---|
+| `POST` | `/api/v1/telemetry/reactors` | **Uma OP** por requisição (DataManager `Api:ReactorMode = Single`) |
+| `POST` | `/api/v1/telemetry/reactors/batch` | **Todas as OPs de um CLP** em uma requisição (DataManager `Api:ReactorMode = Batch`) |
+| `GET`  | `/api/v1/production/reactors` | Tanques com OP ativa (para o Web App) |
+
+Os POST respondem `204 No Content`; payload inválido → `400`.
+
+- Tanque sem OP chega como `{"reactor_id":"R211","op_code":""}` e não aparece no GET.
+- O lote **substitui** o estado do CLP inteiro: tanque que deixou de vir some.
+- O estado é mantido **por CLP + tanque** (o R280 existe no CLP1 e no CLP2).
+- Estado em memória: ao reiniciar a API, volta a ser preenchido no próximo ciclo do DataManager (5 s).
+
+Ainda falta: filtro de IPs autorizados (`security/`) e endpoint de moinhos.

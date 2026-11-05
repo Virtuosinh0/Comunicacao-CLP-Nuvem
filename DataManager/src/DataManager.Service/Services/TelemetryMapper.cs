@@ -13,11 +13,18 @@ public static class TelemetryMapper
         "production_today_kg"
     ];
 
-    /// <summary>UDT da OP → payload do reator.</summary>
-    public static ReactorTelemetry ToReactor(string reactorId, OpData op, DateTime timestampUtc)
+    /// <summary>
+    /// UDT da OP → payload do reator. <paramref name="op"/> null = tanque sem OP (só reactor_id e op_code "").
+    /// <paramref name="plcId"/> e <paramref name="timestampUtc"/> null = vão no topo do lote.
+    /// </summary>
+    public static ReactorTelemetry ToReactor(string reactorId, OpData? op, string? plcId, DateTime? timestampUtc)
     {
+        if (op is null)
+            return new ReactorTelemetry { PlcId = plcId, ReactorId = reactorId, OpCode = string.Empty, Timestamp = timestampUtc };
+
         return new ReactorTelemetry
         {
+            PlcId = plcId,
             ReactorId = reactorId,
             OpCode = op.CodigoOp.Trim(),
             ProductCode = op.NomeProduto.Trim(),

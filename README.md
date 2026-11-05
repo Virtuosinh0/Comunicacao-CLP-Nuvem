@@ -39,10 +39,11 @@ Este repositório contém a documentação da arquitetura, a definição dos con
 
 * **URL:** `/api/v1/telemetry/reactors`
 * **Método:** `POST`
-* Um envio por OP. `start_time` / `end_time` são `null` quando a data não está preenchida no CLP.
+* Um envio por OP. Inclui `plc_id` (o mesmo tanque pode existir em CLPs diferentes). Campos `null` (ex.: `end_time` sem data) são omitidos.
 * **Request Body:**
 ```json
 {
+  "plc_id": "CLP1",
   "reactor_id": "R300",
   "op_code": "AAA",
   "product_code": "00000-00",
@@ -52,9 +53,27 @@ Este repositório contém a documentação da arquitetura, a definição dos con
   "produced_weight_kg": 4900.0,
   "current_step": 15,
   "start_time": "2026-11-04T08:00:00Z",
-  "end_time": null,
   "final_destination": "TQ-10",
   "timestamp": "2026-11-04T20:30:00Z"
+}
+```
+
+#### A2. Atualizar todas as OPs de um CLP (lote)
+
+* **URL:** `/api/v1/telemetry/reactors/batch`
+* **Método:** `POST`
+* Um envio por CLP com todos os tanques. Tanque sem OP vai só com `reactor_id` e `op_code: ""`. Substitui o estado do CLP inteiro.
+* **Request Body:**
+```json
+{
+  "plc_id": "CLP2",
+  "timestamp": "2026-11-05T14:49:07Z",
+  "reactors": [
+    { "reactor_id": "R210", "op_code": "AEMEKL01001", "product_code": "P62475", "status": 2, "priority": 999,
+      "requested_weight_kg": 6500.0, "produced_weight_kg": 3767.4, "current_step": 3,
+      "start_time": "2026-11-05T14:14:47Z", "final_destination": "R210" },
+    { "reactor_id": "R211", "op_code": "" }
+  ]
 }
 ```
 

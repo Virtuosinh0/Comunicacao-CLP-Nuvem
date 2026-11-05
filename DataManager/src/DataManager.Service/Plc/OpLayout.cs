@@ -46,13 +46,21 @@ public static class OpLayout
     /// <summary>Valor inicial de um DTL no TIA Portal (DTL#1970-01-01-00:00:00) = "sem data".</summary>
     private static readonly DateTime DtlDefault = new(1970, 1, 1, 0, 0, 0);
 
-    public static OpData Decode(ReadOnlySpan<byte> op, bool clockIsUtc)
+    /// <summary>
+    /// Decodifica uma OP. Se o codigoOp estiver vazio o tanque está sem OP:
+    /// retorna null sem decodificar os outros campos.
+    /// </summary>
+    public static OpData? Decode(ReadOnlySpan<byte> op, bool clockIsUtc)
     {
         if (op.Length < Size)
             throw new ArgumentException($"OP precisa de {Size} bytes, recebido {op.Length}.", nameof(op));
 
+        var codigoOp = PlcValueDecoder.ReadString(op.Slice(CodigoOp, CodigoOpSize)).Trim();
+        if (codigoOp.Length == 0)
+            return null;
+
         return new OpData(
-            CodigoOp: PlcValueDecoder.ReadString(op.Slice(CodigoOp, CodigoOpSize)),
+            CodigoOp: codigoOp,
             Status: BinaryPrimitives.ReadInt16BigEndian(op[Status..]),
             Prioridade: BinaryPrimitives.ReadInt16BigEndian(op[Prioridade..]),
             QuantidadeSp: BinaryPrimitives.ReadSingleBigEndian(op[QuantidadeSp..]),
