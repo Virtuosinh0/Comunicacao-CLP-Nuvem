@@ -2,12 +2,12 @@
 
 > Projeto acadêmico individual com a **Anjo Tintas** como estudo de caso.
 
-![Siemens S7-1500](https://img.shields.io/badge/CLP-Siemens%20S7--1500-009999?style=for-the-badge)
-![C# .NET 8](https://img.shields.io/badge/C%23-.NET%208-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)
-![Java 17](https://img.shields.io/badge/Java-17-E76F00?style=for-the-badge&logo=openjdk&logoColor=white)
-![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)
-![React](https://img.shields.io/badge/React-19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
-![Vite](https://img.shields.io/badge/Vite-6-646CFF?style=for-the-badge&logo=vite&logoColor=white)
+![Siemens S7-1500](Files/badges/siemens.svg)
+![C# .NET 8](Files/badges/dotnet.svg)
+![Java 17](Files/badges/java.svg)
+![Spring Boot](Files/badges/spring.svg)
+![React 19](Files/badges/react.svg)
+![Vite 6](Files/badges/vite.svg)
 
 | | |
 |---|---|
@@ -79,21 +79,21 @@ A solução tem **4 camadas**:
 ```mermaid
 %%{init: {"theme": "base", "themeVariables": {"fontFamily": "Segoe UI, Helvetica, Arial, sans-serif", "fontSize": "15px", "lineColor": "#555555", "edgeLabelBackground": "#FFFFFF"}}}%%
 flowchart LR
-    subgraph FAB["🏭 Chão de fábrica"]
+    subgraph FAB["Chão de fábrica"]
         direction TB
-        CLP1["<b>CLP 1</b><br/>S7-1500 · CPU 1515-2 PN<br/>DB10: 8 tanques"]
-        CLP2["<b>CLP 2</b><br/>S7-1500 · CPU 1516-3 PN<br/>DB10: 25 tanques"]
+        CLP1["<b>CLP 1</b><br/>CPU 1515-2 PN<br/> 8 tanques"]
+        CLP2["<b>CLP 2</b><br/>CPU 1516-3 PN<br/> 25 tanques"]
     end
 
-    subgraph GW["🖥️ Gateway local"]
+    subgraph GW["Gateway local"]
         DM["<b>DataManager</b><br/>C# · .NET 8<br/>Serviço Windows<br/>leitura a cada 5 s"]
     end
 
-    subgraph SRV["☁️ Servidor"]
+    subgraph SRV["Servidor"]
         API["<b>API</b><br/>Java 17 · Spring Boot<br/>validação dos dados<br/>acesso por IP"]
     end
 
-    subgraph USR["👥 Gestores e operadores"]
+    subgraph USR["Gestores e operadores"]
         WEB["<b>Web App</b><br/>React · Vite<br/>Revisão de Produção"]
     end
 
