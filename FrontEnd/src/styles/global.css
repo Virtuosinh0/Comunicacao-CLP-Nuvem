@@ -367,8 +367,17 @@ select {
   line-height: 1.1;
 }
 
-.reactor__head .badge {
+.reactor__opcode {
   margin-left: auto;
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--text);
+  overflow-wrap: anywhere;
+  text-align: right;
+}
+
+.reactor.is-stale .reactor__opcode {
+  color: var(--text-muted);
 }
 
 /* Status da OP — paleta da IHM (tabela de códigos em src/config/opStatus.js).
@@ -420,12 +429,10 @@ select {
 }
 
 .reactor__op {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px 16px;
+  display: flex;
+  flex-direction: column;
 }
 
-.reactor__op > div,
 .reactor__grid > div {
   display: flex;
   flex-direction: column;

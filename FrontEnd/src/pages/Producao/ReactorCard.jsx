@@ -30,22 +30,12 @@ export default function ReactorCard({ reactor, now }) {
             Sem atualização
           </span>
         )}
+        <span className="reactor__opcode" title="OP">{formatText(r.op_code)}</span>
       </header>
 
-      <div className={`op-status op-status--${status.ihm}`}>
-        <span className="op-status__title">Status da OP</span>
-        {status.label}
-      </div>
-
       <div className="reactor__op">
-        <div>
-          <span className="label">OP</span>
-          <span className="value value--strong">{formatText(r.op_code)}</span>
-        </div>
-        <div>
-          <span className="label">Produto</span>
-          <span className="value value--strong">{formatText(r.product_code)}</span>
-        </div>
+        <span className="label">Produto</span>
+        <span className="value value--strong">{formatText(r.product_code)}</span>
       </div>
 
       <div className="reactor__progress">
@@ -88,6 +78,11 @@ export default function ReactorCard({ reactor, now }) {
           <dd>{r.end_time ? formatDateTime(r.end_time) : formatDuration(r.start_time, durationEnd)}</dd>
         </div>
       </dl>
+
+      <div className={`op-status op-status--${status.ihm}`}>
+        <span className="op-status__title">Status da OP</span>
+        {status.label}
+      </div>
 
       <footer className="reactor__foot">Leitura do CLP: {formatTime(r.last_update)}</footer>
     </article>
