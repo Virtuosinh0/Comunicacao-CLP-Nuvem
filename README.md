@@ -60,7 +60,7 @@ A arquitetura tem **4 camadas**:
 
 | # | Camada | Responsabilidade |
 |---|---|---|
-| 1 | **Chão de fábrica** | CLPs Siemens (S7-1200 / S7-1500) controlam o processo químico e disponibilizam as tags operacionais em DBs. |
+| 1 | **Chão de fábrica** | CLPs Siemens (S7-1500) controlam o processo químico e disponibilizam as tags operacionais em DBs. |
 | 2 | **Serviço local de coleta** | Serviço residente em **C# (.NET)** que se comunica direto com os CLPs pelo protocolo **S7**, lê e interpreta as variáveis de processo no próprio local e as envia para a API. |
 | 3 | **Backend / API middleware** | API em **Java com Spring Boot**: regras de negócio, autenticação e controle de acesso, persistência em banco **SQL (PostgreSQL)** e comunicação segura com a nuvem. |
 | 4 | **Frontend web** | Interface **React** responsiva com os painéis de produção, os gráficos de tendência e o histórico de lotes. |
@@ -81,7 +81,7 @@ No celular:
 
 | Camada | Tecnologia |
 |---|---|
-| Programação do CLP | **Siemens TIA Portal** (S7-1200 / S7-1500) |
+| Programação do CLP | **Siemens TIA Portal** (S7-1500) |
 | Coleta local | **C# (.NET 8)**, Worker Service rodando como Serviço Windows, e **Sharp7** (Snap7) para o protocolo S7 |
 | Backend | **Java 17 + Spring Boot 3** |
 | Banco de dados | **PostgreSQL** |
@@ -95,8 +95,8 @@ No celular:
 ```mermaid
 flowchart TD
     subgraph FABRICA["🏭 Chão de Fábrica - Anjo Tintas"]
-        CLP1["CLP Siemens 1<br/>S7-1200 / S7-1500<br/>DB10 - OPs dos tanques"]
-        CLP2["CLP Siemens 2<br/>S7-1200 / S7-1500<br/>DB10 - OPs dos tanques"]
+        CLP1["CLP Siemens 1<br/>1515-2PN<br/>DB10 - OPs dos tanques"]
+        CLP2["CLP Siemens 2<br/>CPU1516-3PN<br/>DB10 - OPs dos tanques"]
     end
 
     subgraph LOCAL["🖥️ Gateway Local - IP fixo"]
@@ -122,7 +122,7 @@ flowchart TD
 Versão em texto:
 
 ```
-[ CLPs Siemens S7-1200/1500 ]  ──  DBs com as OPs/tanques e moinhos
+[ CLPs Siemens S7-1500 ]  ──  DBs com as OPs/tanques e moinhos
             │
             ▼  Protocolo S7 (Sharp7/Snap7), somente leitura, TCP 102
 [ DataManager - C# .NET (Serviço Windows, gateway local de IP fixo) ]
