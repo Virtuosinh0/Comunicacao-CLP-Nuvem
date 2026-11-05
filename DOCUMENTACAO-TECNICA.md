@@ -1,66 +1,50 @@
-# Acompanhamento de Produção para o Setor Industrial Químico em Nuvem
+# Documentação Técnica: API REST e Payloads JSON
 
-Este repositório contém a documentação da arquitetura, a definição dos contratos de API REST e a simulação de payloads JSON para a solução de acompanhamento de produção industrial em nuvem, voltada ao setor químico.
-
-> **AVISO: a parte de Moinhos (Moagem) NÃO está feita.**
-> Só o acompanhamento das OPs/Reatores (tela de Produção) está funcionando de ponta a ponta.
-> Para Moinhos, o que existe é apenas o contrato da API descrito abaixo e endereços de exemplo no DataManager
-> (`Config/plc-tags.json`, DB200, que não existe no CLP). Ainda não há endpoint de moinhos na API,
-> e a tela de Moagem só mostra "Aguardando integração".
-
-## Telas
-
-Tela de Produção no desktop (códigos de OP e de produto ocultados na imagem):
-
-![Tela de Produção - desktop](Files/MainScreenDesktop.png)
-
-No celular:
-
-<img src="Files/MainScreenMobile.png" alt="Tela de Produção - celular" width="320" />
-
-## Arquitetura do Sistema
-
-![Fluxo: CLP (DB10) -> DataManager -> API -> Front-End](Files/Diagrama.png)
+Contratos de comunicação entre os módulos do sistema. A visão geral do projeto está no [README principal](README.md).
 
 ```
-[ CLP Siemens ] 
-       │
-       ▼ (Leitura direta em DBs via S7 Protocol / Snap7)
-[ Serviço Local / Gateway (C# ou C++) ]
-       │
-       ▼ (HTTP POSTs individuais via IP fixo)
-[ API Java Spring Boot (Nuvem) ] ─── (Restrição por IP / IPs Autorizados)
-       │
-       ▼ (HTTP GETs de listas / Polling ou WebSockets)
-[ Web App (React) ]
+DataManager  --POST /api/v1/telemetry/...-->  API  <--GET /api/v1/production/...--  Web App
 ```
 
-### Papel de cada módulo:
+## Convenções
 
-1. **CLP Siemens:** Controla os dispositivos físicos do chão de fábrica químico (tanques de mistura, reatores e moinhos). As OPs ficam no **DB10** (`dbProducao`), um `udtOPx` de 160 bytes por tanque:
+- JSON em **snake_case** (`reactor_id`, `op_code`, ...).
+- Datas em **ISO 8601 UTC** (`2026-11-04T08:00:00Z`).
+- Pesos em **kg**.
+- O DataManager **omite** os campos sem valor (ex.: `end_time` de uma OP em andamento). A API devolve esses campos como `null`.
+- Um campo sem valor nunca é enviado como `0`: um REAL inválido no CLP (NaN) vira campo ausente.
 
-   ![DB10 (dbProducao) no TIA Portal](Files/CLP_DB.png)
+## Origem do dado: DB10 no CLP
 
-2. **Serviço Local (C#/C++):** Lê e processa os dados brutos do CLP. Realiza envios individuais via `POST` (uma requisição por OP e uma requisição por Moinho) a partir de um **IP Fixo** do gateway local para a nuvem.
+As OPs ficam no **DB10** (`dbProducao`) de cada CPU S7-1500, num array de `udtOPx` com 160 bytes por tanque:
 
-3. **API Centralizadora em Nuvem (Java Spring Boot):** Atua como middleware seguro na nuvem. Recebe os payloads individuais, armazena/mantém o estado atual e expõe rotas de consulta (`GET`) que retornam listas consolidadas para **IPs autorizados**.
+![DB10 (dbProducao) no TIA Portal V21](Files/CLP_DB.png)
 
-4. **Web App (React):** Interface web interativa e responsiva para exibição em tempo real dos painéis (dashboards) de **Revisão de Produção** (reatores/OPs) e **Moagem** (moinhos).
+| Campo no CLP | Tipo | Campo no JSON |
+|---|---|---|
+| `codigoOp` | String[14] | `op_code` |
+| `status` | Int | `status` |
+| `quantidadeSP` | Real | `requested_weight_kg` |
+| `quantidadePV` | Real | `produced_weight_kg` |
+| `nomeProduto` | String[12] | `product_code` |
+| `dataStart` | DTL | `start_time` |
+| `dataEnd` | DTL | `end_time` |
+| `tarefaAtualInt` | Int | `current_step` |
+
+O `reactor_id` é o nome do tanque na posição do array (ver [PlcCatalog.cs](DataManager/src/DataManager.Service/Config/PlcCatalog.cs)). Os offsets estão no [README do DataManager](DataManager/README.md#ops--reatores).
 
 ---
 
-## Endpoints REST & Payloads JSON
+## 1. Recebimento (DataManager → API)
 
-### 1. Ingestão de Dados (Servidor Local -> API Spring Boot em Nuvem)
+Aceito apenas de IPs da lista `security.allowed-ips.gateway`. Resposta de sucesso: **`204 No Content`**.
 
-*Origem restrita ao IP Fixo do servidor local.*
+### 1.1 Uma OP por requisição
 
-#### A. Atualizar dados de uma OP / Reator
+* **URL:** `POST /api/v1/telemetry/reactors`
+* Usado com `Api:ReactorMode = Single` no DataManager.
+* `plc_id` e `timestamp` são **obrigatórios**: a API não inventa a origem nem a hora da leitura.
 
-* **URL:** `/api/v1/telemetry/reactors`
-* **Método:** `POST`
-* Um envio por OP. Inclui `plc_id` (o mesmo tanque pode existir em CLPs diferentes). Campos `null` (ex.: `end_time` sem data) são omitidos.
-* **Request Body:**
 ```json
 {
   "plc_id": "CLP1",
@@ -76,12 +60,15 @@ No celular:
 }
 ```
 
-#### A2. Atualizar todas as OPs de um CLP (lote)
+### 1.2 Todas as OPs de um CLP (lote)
 
-* **URL:** `/api/v1/telemetry/reactors/batch`
-* **Método:** `POST`
-* Um envio por CLP com todos os tanques. Tanque sem OP vai só com `reactor_id` e `op_code: ""`. Substitui o estado do CLP inteiro.
-* **Request Body:**
+* **URL:** `POST /api/v1/telemetry/reactors/batch`
+* Usado com `Api:ReactorMode = Batch` no DataManager (padrão).
+* `plc_id` e `timestamp` vão uma vez, no topo. Valem para todos os tanques do lote.
+* Tanque sem OP vai só com `reactor_id` e `op_code: ""`, e deixa de aparecer na consulta.
+* Tanque que **não veio** no lote não é apagado: fica com a última leitura e passa a aparecer como desatualizado (`stale`).
+* `reactor_id` repetido no mesmo lote → `400`.
+
 ```json
 {
   "plc_id": "CLP2",
@@ -95,103 +82,119 @@ No celular:
 }
 ```
 
-#### B. Atualizar dados de um Moinho (NÃO IMPLEMENTADO)
+### Regras de recebimento
 
-> Contrato previsto apenas. A API ainda não tem este endpoint.
+| Situação | Resultado |
+|---|---|
+| Leitura mais antiga que a já registrada para o tanque | Descartada (aviso no log); não sobrescreve a mais nova |
+| `timestamp` mais de 5 min no futuro (`telemetry.max-clock-skew`) | `400`: relógio do gateway errado |
+| Campo obrigatório ausente ou JSON inválido | `400` |
+| IP fora da lista `gateway` | `403` |
 
-* **URL:** `/api/v1/telemetry/mills`
-* **Método:** `POST`
-* **Request Body:**
-```json
-{
-  "mill_id": "M-200",
-  "name": "Moinho 200",
-  "production_today_kg": 4500.0,
-  "timestamp": "2026-11-04T20:30:00Z"
-}
-```
+O estado é identificado por **CLP + tanque**, porque o mesmo nome existe nos dois CLPs (ex.: R280).
 
 ---
 
-### 2. Consulta de Dados (Web App React -> API Spring Boot em Nuvem)
+## 2. Consulta (Web App → API)
 
-*Exclusivo para IPs previamente autorizados.*
+Aceito apenas de IPs da lista `security.allowed-ips.viewers`.
 
-#### A. Lista de OPs / Reatores em Produção (Tela de Revisão)
+### 2.1 OPs em produção
 
-Retorna o status atual de todas as OPs/reatores monitorados no processo químico para renderização no dashboard React.
+* **URL:** `GET /api/v1/production/reactors`
+* Retorna **somente os tanques com OP ativa** (`op_code` preenchido), ordenados por CLP e tanque.
 
-* **URL:** `/api/v1/production/reactors`
-* **Método:** `GET`
-* **Response Body:**
 ```json
 {
   "total_active_ops": 2,
   "last_update": "2026-11-04T20:30:05Z",
   "reactors": [
     {
-      "reactor_id": "R-300",
+      "plc_id": "CLP1",
+      "reactor_id": "R300",
       "op_code": "AAA",
       "product_code": "00000-00",
+      "status": 2,
       "requested_weight_kg": 6500.0,
       "produced_weight_kg": 4900.0,
       "remaining_weight_kg": 1600.0,
       "current_step": 15,
-      "start_time": "2026-11-04T08:00:00Z"
+      "start_time": "2026-11-04T08:00:00Z",
+      "end_time": null,
+      "last_update": "2026-11-04T20:30:05Z",
+      "stale": false
     },
     {
-      "reactor_id": "R-301",
+      "plc_id": "CLP2",
+      "reactor_id": "R210",
       "op_code": "AAB",
       "product_code": "00000-01",
+      "status": 11,
       "requested_weight_kg": 3000.0,
-      "produced_weight_kg": 3000.0,
-      "remaining_weight_kg": 0.0,
+      "produced_weight_kg": 3012.5,
+      "remaining_weight_kg": -12.5,
       "current_step": 40,
-      "start_time": "2026-11-04T13:15:00Z"
+      "start_time": "2026-11-04T13:15:00Z",
+      "end_time": "2026-11-04T19:02:00Z",
+      "last_update": "2026-11-04T20:29:40Z",
+      "stale": true
     }
   ]
 }
 ```
 
-#### B. Lista de Moinhos (Tela de Moagem) (NÃO IMPLEMENTADO)
+| Campo | Significado |
+|---|---|
+| `total_active_ops` | Quantidade de tanques com OP ativa |
+| `last_update` (topo) | Hora da leitura mais recente recebida de qualquer CLP (relógio do gateway) |
+| `remaining_weight_kg` | `requested - produced`, sem arredondar. **Negativo** = produziu acima do programado. `null` se faltar um dos pesos |
+| `last_update` (tanque) | Hora em que o CLP foi lido para este tanque |
+| `stale` | `true` = a API não recebe leitura nova deste tanque há mais de 30 s (`telemetry.stale-after`); os valores podem não ser os atuais |
 
-> Contrato previsto apenas. A API ainda não tem este endpoint.
+O `status` é o código numérico do CLP. O frontend traduz para texto e cor com a tabela de [opStatus.js](FrontEnd/src/config/opStatus.js), de `0` (Programado) a `11` (Finalizada).
 
-Retorna o resumo de produção acumulada do dia de todos os moinhos da planta industrial.
+---
 
-* **URL:** `/api/v1/milling/summary`
-* **Método:** `GET`
-* **Response Body:**
+## 3. Erros
+
+Os erros de validação e de acesso devolvem uma mensagem pronta para exibir. Um JSON malformado recebe a resposta de erro padrão do Spring.
+
+```json
+{ "message": "timestamp 2026-11-05T15:00:00Z está no futuro (agora: 2026-11-05T14:49:07Z). Verifique o relógio do gateway." }
+```
+
+| Código | Quando |
+|---|---|
+| `400` | Payload inválido ou regra de recebimento violada |
+| `403` | IP de origem não autorizado, ou rota/método que não existe na API |
+
+Detalhes da segurança por IP no [README do BackEnd](BackEnd/README.md#segurança-só-ips-previamente-autorizados).
+
+---
+
+<details>
+<summary><b>Fora do escopo deste trabalho: contratos previstos para moinhos</b></summary>
+
+Contratos combinados com a Anjo Tintas para uma etapa futura, **não implementados** na API.
+
+`POST /api/v1/telemetry/mills`
+
+```json
+{ "mill_id": "M-200", "name": "Moinho 200", "production_today_kg": 4500.0, "timestamp": "2026-11-04T20:30:00Z" }
+```
+
+`GET /api/v1/milling/summary`
+
 ```json
 {
   "unit": "kg",
   "date": "2026-11-04",
-  "total_milled_today_kg": 8255.0,
+  "total_milled_today_kg": 4550.0,
   "mills": [
-    {
-      "mill_id": "M-200",
-      "name": "Moinho 200",
-      "production_today_kg": 4500.0
-    },
-    {
-      "mill_id": "M-201",
-      "name": "Moinho 201",
-      "production_today_kg": 50.0
-    },
-    {
-      "mill_id": "M-202",
-      "name": "Moinho 202",
-      "production_today_kg": 3705.0
-    }
+    { "mill_id": "M-200", "name": "Moinho 200", "production_today_kg": 4500.0 },
+    { "mill_id": "M-201", "name": "Moinho 201", "production_today_kg": 50.0 }
   ]
 }
 ```
 
----
-
-## Tecnologias Previstas
-
-* **Chão de Fábrica (OT):** CLP Siemens (S7-1200 / S7-1500)
-* **Serviço Local / Gateway:** C# (.NET Core) ou C++ (Snap7)
-* **Backend em Nuvem:** Java 17 + Spring Boot (IP Whitelisting Filter)
-* **Frontend Web:** React (Vite, JavaScript/TypeScript, Axios, HTML5/CSS3)
+</details>

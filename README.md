@@ -3,6 +3,7 @@
 > Projeto acadêmico individual com a **Anjo Tintas** como estudo de caso.
 
 ![Siemens S7-1500](Files/badges/siemens.svg)
+![TIA Portal V21](Files/badges/tia.svg)
 ![C# .NET 8](Files/badges/dotnet.svg)
 ![Java 17](Files/badges/java.svg)
 ![Spring Boot](Files/badges/spring.svg)
@@ -51,7 +52,7 @@
 
 Desenvolver uma solução de monitoramento em tempo real da **fabricação de lotes** na Anjo Tintas, acompanhando as **ordens de produção (OPs)** em andamento nos tanques e reatores.
 
-O sistema lê continuamente os dados das OPs direto dos **CLPs Siemens** do chão de fábrica e os envia para uma **API**. Assim, gestores e operadores acompanham de qualquer lugar, pelo navegador, o produto em fabricação, a quantidade produzida, a etapa atual e o status de cada OP.
+O sistema lê continuamente os dados das OPs direto dos **CLPs Siemens (CPUs S7-1500)** do chão de fábrica e os envia para uma **API**. Assim, gestores e operadores acompanham de qualquer lugar, pelo navegador, o produto em fabricação, a quantidade produzida, a etapa atual e o status de cada OP.
 
 ### 5. Justificativa
 
@@ -69,7 +70,7 @@ A solução tem **4 camadas**:
 
 | # | Camada | Responsabilidade |
 |---|---|---|
-| 1 | **Chão de fábrica** | Dois CLPs Siemens S7-1500 (CPU 1515-2 PN e CPU 1516-3 PN) controlam o processo e guardam as OPs de cada tanque no DB10. |
+| 1 | **Chão de fábrica** | Dois CLPs Siemens com CPU S7-1500, a CPU 1515-2 PN e a CPU 1516-3 PN, programados no **TIA Portal V21**. Eles controlam o processo e guardam as OPs de cada tanque no DB10. |
 | 2 | **Serviço local de coleta** | Serviço Windows em **C# (.NET)** que lê os CLPs pelo protocolo **S7** a cada 5 segundos, sem escrever nada neles, converte os dados em JSON e os envia para a API. |
 | 3 | **API** | API em **Java com Spring Boot** que recebe as leituras, descarta dados inválidos ou atrasados, mantém o estado atual de cada tanque e só atende endereços IP autorizados. |
 | 4 | **Frontend web** | Interface **React** responsiva com o painel de **Revisão de Produção**: um card por tanque com OP ativa. |
@@ -79,7 +80,7 @@ A solução tem **4 camadas**:
 ```mermaid
 %%{init: {"theme": "base", "themeVariables": {"fontFamily": "Segoe UI, Helvetica, Arial, sans-serif", "fontSize": "15px", "lineColor": "#555555", "edgeLabelBackground": "#FFFFFF"}}}%%
 flowchart LR
-    subgraph FAB["Chão de fábrica"]
+    subgraph FAB["Chão de fábrica: CPUs S7-1500"]
         direction TB
         CLP1["<b>CLP 1</b><br/>CPU 1515-2 PN<br/> 8 tanques"]
         CLP2["<b>CLP 2</b><br/>CPU 1516-3 PN<br/> 25 tanques"]
@@ -126,7 +127,7 @@ flowchart LR
 
 | Camada | Tecnologia |
 |---|---|
-| Programação do CLP | **Siemens TIA Portal**, CLPs **S7-1500** |
+| Programação do CLP | **Siemens TIA Portal V21**, CPUs **S7-1500** (CPU 1515-2 PN e CPU 1516-3 PN) |
 | Coleta local | **C# (.NET 8)** como Serviço Windows e **Sharp7** (versão C# do Snap7) para o protocolo S7 |
 | API | **Java 17** com **Spring Boot 3.5** e **Spring Security** (filtro de IPs autorizados) |
 | Frontend | **React 19** com **Vite 6** |
@@ -142,7 +143,7 @@ O fluxo completo **CLP → DataManager → API → tela** está funcionando com 
 
 **Chão de fábrica**
 - [x] Levantamento do processo de fabricação de lotes com a Anjo Tintas
-- [x] Mapeamento do DB10 (`dbProducao`) e do UDT da OP (`udtOPx`, 160 bytes por tanque) no TIA Portal
+- [x] Mapeamento do DB10 (`dbProducao`) e do UDT da OP (`udtOPx`, 160 bytes por tanque) no TIA Portal V21
 - [x] CLPs configurados para leitura externa (PUT/GET liberado e DB sem acesso otimizado)
 
 **Serviço local de coleta (C#)**
@@ -171,9 +172,9 @@ O fluxo completo **CLP → DataManager → API → tela** está funcionando com 
 
 ### Evidências
 
-DB10 (`dbProducao`) no TIA Portal, de onde o DataManager lê as OPs:
+DB10 (`dbProducao`) no TIA Portal V21, de onde o DataManager lê as OPs:
 
-![DB10 no TIA Portal](Files/CLP_DB.png)
+![DB10 no TIA Portal V21](Files/CLP_DB.png)
 
 Tela de Revisão de Produção no desktop (os códigos de OP e de produto foram ocultados):
 
@@ -210,7 +211,7 @@ Tudo o que foi proposto na N1A foi entregue e está em funcionamento na Anjo Tin
 
 | Proposto na N1A | Entregue |
 |---|---|
-| Ler os dados das OPs direto dos CLPs Siemens | DataManager lê os **2 CLPs S7-1500** (33 tanques) pelo protocolo S7, sem escrever nada neles |
+| Ler os dados das OPs direto dos CLPs Siemens | DataManager lê os **2 CLPs com CPU S7-1500** (33 tanques) pelo protocolo S7, sem escrever nada neles |
 | Serviço local de coleta em C# | Serviço Windows em **.NET 8** com início automático, leitura a cada 5 s e logs no Visualizador de Eventos |
 | API em Java com Spring Boot | API com endpoints de recebimento e consulta, proteção contra dado falso e controle de acesso por IP |
 | Interface web em React | Painel de **Revisão de Produção** responsivo, usado no desktop, na TV e no celular |
@@ -219,6 +220,7 @@ Tudo o que foi proposto na N1A foi entregue e está em funcionamento na Anjo Tin
 ### Aplicação dos conhecimentos da trilha
 
 **Automação Industrial**
+- Programação das CPUs S7-1500 no TIA Portal V21.
 - Estrutura de dados no CLP: DB10 com um array de UDT (`udtOPx`), um elemento por tanque.
 - Configuração do CLP para comunicação externa: PUT/GET liberado e DB sem acesso otimizado.
 - Protocolo S7 (porta TCP 102) e decodificação dos tipos do CLP: String, Int, Real e DTL, em big-endian.
@@ -237,7 +239,7 @@ Tudo o que foi proposto na N1A foi entregue e está em funcionamento na Anjo Tin
 | Documento | Conteúdo |
 |---|---|
 | [Documentação técnica](DOCUMENTACAO-TECNICA.md) | Endpoints REST e payloads JSON |
-| [Guia de instalação](INSTALACAO.md) | Ferramentas, bibliotecas e configuração do CLP no TIA Portal |
+| [Guia de instalação](INSTALACAO.md) | Ferramentas, bibliotecas e configuração das CPUs S7-1500 no TIA Portal V21 |
 | [DataManager](DataManager/README.md) | Layout do UDT, configuração dos CLPs e envio para a API |
 | [BackEnd](BackEnd/README.md) | Endpoints, regras contra dado falso e segurança por IP |
 | [FrontEnd](FrontEnd/README.md) | Telas, comportamento com dado desatualizado e identidade visual |

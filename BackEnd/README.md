@@ -93,4 +93,15 @@ token/chave no cabeçalho ou certificado de cliente (mTLS).
 `X-Forwarded-For` é ignorado de propósito (qualquer um pode forjá-lo). Se a API ficar atrás de um proxy,
 será preciso configurar o proxy como confiável (`server.forward-headers-strategy`) — senão todos parecerão vir do IP do proxy.
 
-Ainda falta: endpoint de moinhos.
+## Testes
+
+```bash
+cd BackEnd
+mvn test
+```
+
+| Classe | O que testa |
+|---|---|
+| `TelemetryControllerTests` | Envio individual e em lote, tanque sem OP sai da lista, tanque ausente no lote vira `stale`, leitura fora de ordem descartada, restante negativo, mesmo tanque em CLPs diferentes, payloads inválidos (400) |
+| `SecurityFilterTests` | Quem consulta não envia e vice-versa, IP desconhecido bloqueado, `X-Forwarded-For` não engana o filtro, rota não listada bloqueada, IP inválido na configuração impede a API de subir |
+| `ApiApplicationTests` | Inicialização da aplicação |

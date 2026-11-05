@@ -1,25 +1,31 @@
 # FrontEnd — Web App React
 
-React + Vite. Exibe os painéis de Revisão de Produção e Moagem.
+React + Vite. Exibe o painel de **Revisão de Produção**: um card por tanque com OP ativa.
 
 ```
-public/          # Arquivos estáticos
+public/          # Ícones do site
 src/
-├── api/         # Chamadas aos endpoints GET da API
-├── assets/      # Imagens, ícones
+├── api/
+│   ├── client.js       # fetch + mensagens de erro prontas para exibir
+│   └── production.js   # GET /api/v1/production/reactors
+├── assets/      # Logo da Anjo Tintas
 ├── components/
 │   ├── ScreenNav.jsx   # Logo, abas e anterior/próxima
+│   ├── ApiStatus.jsx   # Indicador de conexão com a API e horário da última resposta
 │   ├── Footer.jsx      # Rodapé
 │   └── ScreenView.jsx  # Renderiza a tela atual
 ├── config/
-│   └── screens.js      # Lista de telas (a primeira é a inicial)
-├── hooks/       # Hooks (ex.: polling periódico dos dados)
+│   ├── screens.js      # Lista de telas (a primeira é a inicial)
+│   └── opStatus.js     # Código de status da OP → texto e cor da IHM
+├── hooks/
+│   └── usePolling.js   # Busca periódica; a próxima só começa quando a anterior termina
 ├── pages/
-│   ├── Producao/  # Tela de Produção (OPs/Reatores) — tela inicial
-│   └── Moagem/    # Tela de Moagem (Moinhos)
+│   ├── Producao/  # Tela de Revisão de Produção (tela inicial) e ReactorCard
+│   └── Moagem/    # Aba reservada para os moinhos (fora do escopo deste trabalho)
 ├── services/
 │   └── ScreenService.jsx  # Serviço de troca de tela (ScreenProvider + useScreen)
-├── types/       # Tipos/interfaces dos payloads
+├── utils/
+│   └── format.js       # Formatação de kg, datas, duração e percentual (pt-BR)
 └── styles/      # CSS global
 ```
 
