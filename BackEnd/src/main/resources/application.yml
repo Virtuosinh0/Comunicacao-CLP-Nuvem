@@ -7,3 +7,10 @@ spring:
 
 server:
   port: 8080
+
+telemetry:
+  # Sem leitura nova do tanque há mais que isso (relógio da API) -> "stale": true no GET.
+  # DataManager envia a cada 5 s; 30 s tolera algumas falhas seguidas.
+  stale-after: 30s
+  # Timestamp da leitura mais no futuro que isso (relógio do gateway adiantado) -> 400.
+  max-clock-skew: 5m

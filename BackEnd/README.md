@@ -40,8 +40,20 @@ A API sobe em `http://localhost:8080`. Testes: `mvn test`.
 Os POST respondem `204 No Content`; payload inválido → `400`.
 
 - Tanque sem OP chega como `{"reactor_id":"R211","op_code":""}` e não aparece no GET.
-- O lote **substitui** o estado do CLP inteiro: tanque que deixou de vir some.
 - O estado é mantido **por CLP + tanque** (o R280 existe no CLP1 e no CLP2).
 - Estado em memória: ao reiniciar a API, volta a ser preenchido no próximo ciclo do DataManager (5 s).
+
+### Regras contra dado falso
+
+| Situação | Comportamento |
+|---|---|
+| DataManager/CLP parou de enviar | O tanque continua no GET com a última leitura, mas com `"stale": true` após `telemetry.stale-after` (30 s, relógio da API) |
+| Tanque não veio no lote | Não é apagado: fica com a última leitura e vira `stale` |
+| Leitura mais antiga chega depois de uma mais nova | Descartada (log de aviso), não sobrescreve |
+| `timestamp` no futuro além de `telemetry.max-clock-skew` (5 min) | `400`: relógio do gateway errado |
+| Envio individual sem `timestamp` ou `plc_id` | `400`: a API não inventa hora nem origem |
+| Produzido acima do pedido | `remaining_weight_kg` negativo (não é cortado em 0) |
+
+`last_update` = hora da leitura no CLP (relógio do gateway).
 
 Ainda falta: filtro de IPs autorizados (`security/`) e endpoint de moinhos.

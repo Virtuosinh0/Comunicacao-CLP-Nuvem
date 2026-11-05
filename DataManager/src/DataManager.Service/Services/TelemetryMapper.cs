@@ -51,19 +51,33 @@ public static class TelemetryMapper
         };
     }
 
-    /// <summary>Passa por decimal para evitar ruído de precisão do float (ex.: 0.1f → 0.100000001490116).</summary>
-    private static double ToDouble(float value) =>
-        float.IsFinite(value) ? (double)(decimal)value : 0d;
+    /// <summary>
+    /// REAL do CLP → double. NaN/Infinito (REAL inválido no CLP) vira null: nunca enviar 0 como se fosse leitura real.
+    /// Passa por decimal para evitar ruído de precisão do float (ex.: 0.1f → 0.100000001490116).
+    /// </summary>
+    private static double? ToDouble(float value)
+    {
+        if (!float.IsFinite(value))
+            return null;
+
+        return Math.Abs(value) < 7.9e28f ? (double)(decimal)value : value;
+    }
 
     private static double GetDouble(IReadOnlyDictionary<string, object?> values, string name)
     {
         if (!values.TryGetValue(name, out var value))
             throw new KeyNotFoundException($"Tag '{name}' não foi lida do CLP.");
 
-        return value switch
+        var result = value switch
         {
             float f => ToDouble(f),
+            null => null,
             var other => Convert.ToDouble(other, CultureInfo.InvariantCulture)
         };
+
+        // Moinho com valor inválido não é enviado (erro no log) em vez de mandar 0.
+        return result is { } d && double.IsFinite(d)
+            ? d
+            : throw new InvalidDataException($"Tag '{name}' com valor inválido no CLP ({value}).");
     }
 }

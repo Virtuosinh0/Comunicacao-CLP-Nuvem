@@ -62,9 +62,8 @@ public sealed class Worker : BackgroundService
             do
             {
                 var started = Stopwatch.GetTimestamp();
-                var timestamp = TruncateToSeconds(DateTime.UtcNow);
                 foreach (var (station, plc) in _stations)
-                    await RunStationCycleAsync(station, plc, timestamp, stoppingToken);
+                    await RunStationCycleAsync(station, plc, stoppingToken);
 
                 var elapsed = Stopwatch.GetElapsedTime(started);
                 if (elapsed > interval)
@@ -93,7 +92,7 @@ public sealed class Worker : BackgroundService
         base.Dispose();
     }
 
-    private async Task RunStationCycleAsync(PlcStation station, IPlcReader plc, DateTime timestamp, CancellationToken cancellationToken)
+    private async Task RunStationCycleAsync(PlcStation station, IPlcReader plc, CancellationToken cancellationToken)
     {
         var started = Stopwatch.GetTimestamp();
         try
@@ -108,10 +107,10 @@ public sealed class Worker : BackgroundService
 
         try
         {
-            await ProcessOpsAsync(station, plc, timestamp, cancellationToken);
+            await ProcessOpsAsync(station, plc, cancellationToken);
 
             foreach (var mill in station.Mills)
-                await ProcessMillAsync(mill, plc, timestamp, cancellationToken);
+                await ProcessMillAsync(mill, plc, cancellationToken);
         }
         catch (PlcCommunicationException ex)
         {
@@ -125,7 +124,7 @@ public sealed class Worker : BackgroundService
     /// Lê o array de OPs inteiro em uma leitura. Tanque com codigoOp vazio não tem os outros campos decodificados.
     /// Envia conforme Api:ReactorMode: 1 POST com todas (Batch) ou 1 POST por OP (Single).
     /// </summary>
-    private async Task ProcessOpsAsync(PlcStation station, IPlcReader plc, DateTime timestamp, CancellationToken cancellationToken)
+    private async Task ProcessOpsAsync(PlcStation station, IPlcReader plc, CancellationToken cancellationToken)
     {
         var ops = station.Definition.Ops;
         var connection = station.Connection;
@@ -134,6 +133,7 @@ public sealed class Worker : BackgroundService
         var t0 = Stopwatch.GetTimestamp();
         var buffer = plc.ReadBytes(connection.OpDb, connection.OpStartAddress, ops.Count * OpLayout.Size);
         var t1 = Stopwatch.GetTimestamp();
+        var timestamp = TruncateToSeconds(DateTime.UtcNow); // momento real da leitura deste CLP
 
         var payloads = new List<ReactorTelemetry>(ops.Count);
         var active = 0;
@@ -181,12 +181,13 @@ public sealed class Worker : BackgroundService
             active, ops.Count);
     }
 
-    private async Task ProcessMillAsync(TagGroup mill, IPlcReader plc, DateTime timestamp, CancellationToken cancellationToken)
+    private async Task ProcessMillAsync(TagGroup mill, IPlcReader plc, CancellationToken cancellationToken)
     {
         MillTelemetry payload;
         try
         {
-            payload = TelemetryMapper.ToMill(mill, plc.Read(mill.Tags), timestamp);
+            var values = plc.Read(mill.Tags);
+            payload = TelemetryMapper.ToMill(mill, values, TruncateToSeconds(DateTime.UtcNow));
         }
         catch (Exception ex) when (ex is not PlcCommunicationException)
         {

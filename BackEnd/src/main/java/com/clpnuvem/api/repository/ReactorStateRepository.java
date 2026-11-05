@@ -3,13 +3,10 @@ package com.clpnuvem.api.repository;
 import com.clpnuvem.api.model.ReactorState;
 import org.springframework.stereotype.Repository;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 /**
  * Estado atual dos tanques em memória (perdido ao reiniciar; o DataManager reenvia a cada ciclo).
@@ -20,18 +17,18 @@ public class ReactorStateRepository {
 
     private final Map<String, ReactorState> states = new ConcurrentHashMap<>();
 
-    public void save(ReactorState state) {
-        states.put(key(state.plcId(), state.reactorId()), state);
-    }
-
-    /** Substitui todos os tanques de um CLP: os que não vieram no lote são removidos. */
-    public synchronized void replacePlc(String plcId, Collection<ReactorState> plcStates) {
-        Set<String> keep = plcStates.stream()
-                .map(s -> key(s.plcId(), s.reactorId()))
-                .collect(Collectors.toSet());
-
-        plcStates.forEach(this::save);
-        states.entrySet().removeIf(e -> Objects.equals(e.getValue().plcId(), plcId) && !keep.contains(e.getKey()));
+    /**
+     * Grava a leitura, a menos que já exista uma leitura MAIS NOVA do mesmo tanque
+     * (envio atrasado/fora de ordem não pode sobrescrever dado mais recente).
+     *
+     * @return false se a leitura foi descartada por ser mais antiga
+     */
+    public boolean saveIfNewer(ReactorState state) {
+        ReactorState result = states.merge(
+                key(state.plcId(), state.reactorId()),
+                state,
+                (current, incoming) -> incoming.readAt().isBefore(current.readAt()) ? current : incoming);
+        return result == state;
     }
 
     public List<ReactorState> findAll() {
@@ -39,6 +36,6 @@ public class ReactorStateRepository {
     }
 
     private static String key(String plcId, String reactorId) {
-        return Objects.toString(plcId, "") + "/" + reactorId;
+        return Objects.requireNonNull(plcId) + "/" + Objects.requireNonNull(reactorId);
     }
 }

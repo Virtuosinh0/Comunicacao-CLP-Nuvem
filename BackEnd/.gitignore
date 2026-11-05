@@ -2,3 +2,9 @@ target/
 .idea/
 *.iml
 .vscode/
+
+# Metadados gerados pela extensão Java do VS Code (Eclipse JDT)
+.classpath
+.project
+.settings/
+.factorypath

@@ -2,7 +2,12 @@ package com.clpnuvem.api.model;
 
 import java.time.Instant;
 
-/** Estado atual de um tanque (última leitura recebida). opCode vazio = tanque sem OP. */
+/**
+ * Estado atual de um tanque (última leitura recebida). opCode vazio = tanque sem OP.
+ *
+ * @param readAt     quando o DataManager leu o CLP (relógio do gateway)
+ * @param receivedAt quando a API recebeu (relógio da API) — base para saber se o dado está desatualizado
+ */
 public record ReactorState(
         String plcId,
         String reactorId,
@@ -16,7 +21,8 @@ public record ReactorState(
         Instant startTime,
         Instant endTime,
         String finalDestination,
-        Instant lastUpdate) {
+        Instant readAt,
+        Instant receivedAt) {
 
     public boolean hasOp() {
         return opCode != null && !opCode.isBlank();
