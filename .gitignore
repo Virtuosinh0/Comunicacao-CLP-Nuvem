@@ -1,0 +1,8 @@
+# Documentos de entrega e divulgacao (ficam fora do repositorio)
+Files/*.docx
+Files/*.pptx
+Files/*.pdf
+Files/Entrega/
+
+# Arquivos temporarios do Office (arquivo aberto no Word/PowerPoint)
+~$*

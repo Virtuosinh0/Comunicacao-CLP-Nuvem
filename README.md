@@ -14,7 +14,7 @@
 |---|---|
 | **Integrante** | Silvio Virtuoso Júnior *(trabalho individual)* |
 | **Empresa parceira** | Anjo Tintas |
-| **Trilha formativa** | Automação Industrial e Engenharia de Software |
+| **Trilha formativa** | Automação Industrial e Engenharia de Computação |
 
 ---
 
@@ -42,7 +42,7 @@
 
 ### 2. Trilha formativa
 
-**Automação Industrial e Engenharia de Software**
+**Automação Industrial e Engenharia de Computação**
 
 ### 3. Título do projeto
 
@@ -226,7 +226,7 @@ Tudo o que foi proposto na N1A foi entregue e está em funcionamento na Anjo Tin
 - Protocolo S7 (porta TCP 102) e decodificação dos tipos do CLP: String, Int, Real e DTL, em big-endian.
 - Leitura sem interferir no processo: o serviço só lê, nunca escreve no CLP.
 
-**Engenharia de Software**
+**Engenharia de Computação**
 - Arquitetura em camadas: CLP, coleta, API e frontend, cada uma com responsabilidade única.
 - Contrato REST com JSON, documentado na [Documentação técnica](DOCUMENTACAO-TECNICA.md).
 - Confiabilidade dos dados: validação na entrada, descarte de leitura fora de ordem e marcação de dado desatualizado.
